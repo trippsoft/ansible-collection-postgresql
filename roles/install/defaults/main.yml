@@ -1,0 +1,103 @@
+---
+cert_vault_extra_params:
+  ttl: 2628000
+
+pgsql_major_version: '16'
+pgsql_install_pgaudit: true
+pgsql_install_timescaledb: false
+
+pgsql_listen_on_local_only: false
+pgsql_listen_on_all_addresses: true
+
+pgsql_port: 5432
+pgsql_max_connections: 100
+pgsql_password_encryption: scram-sha-256
+pgsql_ssl: false
+pgsql_ssl_cert_file: server.crt
+pgsql_ssl_key_file: server.key
+pgsql_ssl_min_protocol_version: TLSv1.2
+pgsql_shared_buffers: 128MB
+pgsql_work_mem: 4MB
+pgsql_maintenance_work_mem: 64MB
+pgsql_min_wal_size: 80MB
+pgsql_max_wal_size: 1GB
+
+pgsql_effective_io_concurrency: 1
+pgsql_max_worker_processes: 8
+pgsql_max_parallel_workers_per_gather: 2
+pgsql_max_parallel_workers: 8
+pgsql_max_parallel_maintenance_workers: 2
+
+pgsql_checkpoint_completion_target: 0.9
+
+pgsql_random_page_cost: 4.0
+
+pgsql_effective_cache_size: 4GB
+
+pgsql_default_statistics_target: 100
+
+pgsql_log_to_stderr: true
+pgsql_log_to_csvlog: false
+pgsql_log_to_syslog: false
+
+pgsql_logging_collector: true
+pgsql_log_directory: /var/log/postgres
+pgsql_log_filename: postgresql.log
+pgsql_log_file_mode: '0600'
+pgsql_log_rotation_age: "{{ '0' if pgsql_configure_logrotate else '1d' }}"
+pgsql_log_rotation_size: "{{ '0' if pgsql_configure_logrotate else '10MB' }}"
+pgsql_log_truncate_on_rotation: true
+pgsql_syslog_facility: LOCAL0
+pgsql_syslog_ident: postgres
+pgsql_syslog_sequence_numbers: true
+pgsql_syslog_split_messages: true
+
+pgsql_log_min_messages: WARNING
+pgsql_log_min_error_statement: ERROR
+
+pgsql_debug_print_parse: false
+pgsql_debug_print_rewritten: false
+pgsql_debug_print_plan: false
+pgsql_debug_pretty_print: true
+
+pgsql_log_connections: true
+pgsql_log_disconnections: true
+pgsql_log_error_verbosity: VERBOSE
+pgsql_log_hostname: false
+pgsql_log_line_prefix: '%m [%p]: [%l-1] db=%d,user=%u,app=%a,client=%h '
+pgsql_log_statement: ddl
+pgsql_timezone: 'America/New_York'
+pgsql_log_timezone: "{{ pgsql_timezone }}"
+pgsql_pgaudit_log:
+  - DDL
+  - WRITE
+pgsql_additional_shared_preload_libraries: []
+
+pgsql_configure_firewalld: "{{ not pgsql_listen_on_local_only }}"
+pgsql_configure_monitoring: "{{ not pgsql_listen_on_local_only }}"
+pgsql_configure_logrotate: true
+
+pgsql_logrotate_retention: 7
+
+pgsql_additional_hba_entries: []
+
+pgsql_databases: []
+pgsql_users: []
+
+pgsql_configure_vault_database_connection: "{{ not pgsql_listen_on_local_only }}"
+pgsql_vault_database_mount_point: database
+pgsql_vault_managed_monitoring_credentials: "{{ pgsql_configure_monitoring }}"
+pgsql_create_vault_secret_engines: true
+pgsql_vault_monitor_mount_point: secret
+pgsql_vault_monitor_path: "pgsql/{{ inventory_hostname | lower }}"
+pgsql_vault_access_hostname: '127.0.0.1'
+pgsql_vault_ssl_mode: verify-full
+pgsql_vault_user: vault
+
+pgsql_vault_ip_addresses: []
+
+pgsql_monitoring_ip_addresses: [] 
+
+pgsql_monitoring_user: zbx_monitor
+
+pgsql_password_rotation_period: 5184000

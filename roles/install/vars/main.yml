@@ -1,0 +1,140 @@
+---
+_pgsql_rhel_supported_versions:
+  - '8'
+  - '9'
+
+_pgsql_non_rhel_supported_distribution_releases:
+  Debian:
+    - bookworm
+    - bullseye
+  Ubuntu:
+    - focal
+    - jammy
+    - noble
+
+_pgsql_supported_major_versions:
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+
+_pgsql_rhel_pgaudit_package_name_by_major_version:
+  '12': pgaudit14_12
+  '13': pgaudit15_13
+  '14': pgaudit16_14
+  '15': pgaudit17_15
+  '16': pgaudit_16
+
+_pgsql_rhel_pgaudit_package_name: >-
+  {{ _pgsql_pgaudit_package_name_by_major_version[pgsql_major_version] }}
+
+_pgsql_custom_listen_addresses: "{{ pgsql_listen_addresses | default([]) | join(',') }}"
+
+_pgsql_listen_addresses: >-
+  {% if pgsql_listen_on_local_only %}localhost{% elif pgsql_listen_on_all_addresses %}*{% else %}{{ _pgsql_custom_listen_addresses }}{% endif %}
+
+_pgsql_password_encryption_allowed_values:
+  - scram-sha-256
+  - md5
+
+_pgsql_stderr_log_destination: >-
+  {{ ['stderr'] if pgsql_log_to_stderr else [] }}
+_pgsql_csvlog_log_destination: >-
+  {{ ['csvlog'] if pgsql_log_to_csvlog else [] }}
+_pgsql_syslog_log_destination: >-
+  {{ ['syslog'] if pgsql_log_to_syslog else [] }}
+
+_pgsql_log_destination_list: >-
+  {{ _pgsql_stderr_log_destination + _pgsql_csvlog_log_destination + _pgsql_syslog_log_destination }}
+
+_pgsql_log_destination: "{{ _pgsql_log_destination_list | join(',') }}"
+
+_pgsql_log_level_allowed_values:
+  - DEBUG5
+  - DEBUG4
+  - DEBUG3
+  - DEBUG2
+  - DEBUG1
+  - LOG
+  - NOTICE
+  - WARNING
+  - ERROR
+  - FATAL
+  - PANIC
+
+_pgsql_log_error_verboisty_allowed_values:
+  - TERSE
+  - DEFAULT
+  - VERBOSE
+
+_pgsql_log_statement_allowed_values:
+  - none
+  - ddl
+  - mod
+  - all
+
+_pgsql_pgaudit_shared_preload_libraries: >-
+  {{ ['pgaudit'] if pgsql_install_pgaudit else [] }}
+_pgsql_timescaledb_shared_preload_libraries: >-
+  {{ ['timescaledb'] if pgsql_install_timescaledb else [] }}
+
+_pgsql_shared_preload_libraries_list: >-
+  {{ pgsql_additional_shared_preload_libraries +
+     _pgsql_pgaudit_shared_preload_libraries +
+     _pgsql_timescaledb_shared_preload_libraries }}
+
+_pgsql_shared_preload_libraries: "{{ _pgsql_shared_preload_libraries_list | join(',') }}"
+
+_pgsql_pgaudit_log: "{{ pgsql_pgaudit_log | join(',') }}"
+
+_pgsql_hba_local_peer_user: >-
+  {{ 'all' if pgsql_hba_allow_local_peer_for_all_users else 'postgres' }}
+
+_pgsql_default_hba_entries:
+  - type: local
+    database: all
+    user: all
+    auth_method: peer
+  - type: host
+    database: all
+    user: all
+    address: '127.0.0.1/32'
+    auth_method: "{{ pgsql_password_encryption }}"
+  - type: host
+    database: all
+    user: all
+    address: '::1/128'
+    auth_method: "{{ pgsql_password_encryption }}"
+
+_pgsql_vault_hba_entries: >-
+  [
+  {% for address in pgsql_vault_ip_addresses %}
+    {
+      "type": "host",
+      "database": "all",
+      "user": "{{ pgsql_vault_user }}",
+      "address": "{{ address }}/32",
+      "auth_method": "{{ pgsql_password_encryption }}"
+    }{{ ',' if not loop.last }}
+  {% endfor %}
+  ]
+
+_pgsql_monitoring_hba_entries: >-
+  [
+  {% for address in pgsql_monitoring_ip_addresses %}
+    {
+      "type": "host",
+      "database": "all",
+      "user": "{{ pgsql_monitoring_user }}",
+      "address": "{{ address }}/32",
+      "auth_method": "{{ pgsql_password_encryption }}"
+    }{{ ',' if not loop.last }}
+  {% endfor %}
+  ]
+
+_pgsql_hba_entries: >-
+  {{ pgsql_additional_hba_entries +
+     _pgsql_default_hba_entries +
+     _pgsql_vault_hba_entries +
+     _pgsql_monitoring_hba_entries }}

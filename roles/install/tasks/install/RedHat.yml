@@ -1,0 +1,59 @@
+---
+- name: Disable PostgreSQL AppStream module
+  become: true
+  ansible.builtin.command: dnf -y module disable postgresql
+  register: _pgsql_disable_module
+  changed_when: >-
+    'Disabling modules:' in _pgsql_disable_module.stdout
+
+- name: Install official PostgreSQL repository
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    state: present
+    disable_gpg_check: true
+
+- name: Install PostgreSQL packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - python3-psycopg2
+      - "postgresql{{ pgsql_major_version }}-server"
+    state: present
+
+- name: Install pgAudit package
+  when:
+    - pgsql_install_pgaudit
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - "{{ _pgsql_rhel_pgaudit_package_name }}"
+    state: present
+
+- name: Install TimescaleDB
+  when:
+    - pgsql_install_timescaledb
+  block:
+    - name: Add TimescaleDB GPG key
+      become: true
+      ansible.builtin.rpm_key: 
+        key: https://packagecloud.io/timescale/timescaledb/gpgkey
+        state: present
+
+    - name: Create TimescaleDB repository config file
+      become: true
+      ansible.builtin.template:
+        src: timescale_timescaledb.repo.j2
+        dest: /etc/yum.repos.d/timescale_timescaledb.repo
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install TimescaleDB package
+      become: true
+      ansible.builtin.dnf:
+        name:
+          - "timescaledb-2-postgresql-{{ pgsql_major_version }}"
+        state: present
+        update_cache: true

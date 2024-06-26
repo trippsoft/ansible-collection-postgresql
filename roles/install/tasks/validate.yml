@@ -1,0 +1,233 @@
+---
+- name: Gathering Facts
+  when:
+    - ansible_os_family is not defined or
+      ansible_distribution is not defined or
+      ansible_distribution_major_version is not defined or
+      ansible_distribution_release is not defined
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!min'
+      - os_family
+      - distribution
+      - distribution_major_version
+      - distribution_release
+
+- name: Validate RHEL major version
+  when:
+    - ansible_os_family == 'RedHat'
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution_major_version in _nginx_rhel_supported_versions
+    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
+    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported"
+
+- name: Validate non-RHEL distribution
+  when:
+    - ansible_os_family != 'RedHat'
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution in _nginx_non_rhel_supported_distribution_releases.keys()
+    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
+    success_msg: "{{ ansible_distribution }} is supported. Checking version."
+
+- name: Validate non-RHEL distribution release
+  when:
+    - ansible_os_family != 'RedHat'
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution_release in _nginx_non_rhel_supported_distribution_releases[ansible_distribution]
+    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is not supported"
+    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is supported"
+
+- name: Validate PostgreSQL major version
+  ansible.builtin.assert:
+    that:
+      - pgsql_major_version | string in _pgsql_supported_major_versions
+    fail_msg: "Unsupported PostgreSQL major version '{{ pgsql_major_version }}'. Supported versions are '{{ _pgsql_supported_major_versions | join(', ') }}'."
+    success_msg: "PostgreSQL major version '{{ pgsql_major_version }}' is supported."
+
+- name: Validate PostgreSQL listen addresses
+  ansible.builtin.assert:
+    that:
+      - (pgsql_listen_on_local_only | bool and not pgsql_listen_on_all_addresses | bool) or
+        (not pgsql_listen_on_local_only | bool and pgsql_listen_on_all_addresses | bool) or
+        (not pgsql_listen_on_local_only | bool and not pgsql_listen_on_all_addresses | bool)
+    fail_msg: Both 'pgsql_listen_on_local_only' and 'pgsql_listen_on_all_addresses' cannot be true at the same time.
+    success_msg: PostgreSQL listen address boolean variables are valid.
+
+- name: Validate PostgreSQL custom listen addresses
+  when:
+    - not pgsql_listen_on_all_addresses | bool
+    - not pgsql_listen_on_local_only | bool
+  ansible.builtin.assert:
+    that:
+      - pgsql_listen_addresses is defined
+    fail_msg: The 'pgsql_listen_addresses' variable must be defined when both 'pgsql_listen_on_all_addresses' and 'pgsql_listen_on_local_only' are false.
+    success_msg: The 'pgsql_listen_addresses' variable is defined.
+
+- name: Validate PostgreSQL port
+  ansible.builtin.assert:
+    that:
+      - pgsql_port | int > 0
+      - pgsql_port | int < 65536
+    fail_msg: "Invalid PostgreSQL port '{{ pgsql_port }}'. Port must be an integer between 1 and 65535."
+    success_msg: "PostgreSQL port '{{ pgsql_port }}' is valid."
+
+- name: Validate PostgreSQL max connections
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_connections | int > 0
+    fail_msg: "Invalid PostgreSQL max connections '{{ pgsql_max_connections }}'. Max connections must be an integer greater than 0."
+    success_msg: "PostgreSQL max connections '{{ pgsql_max_connections }}' is valid."
+
+- name: Validate PostgreSQL password encryption
+  ansible.builtin.assert:
+    that:
+      - pgsql_password_encryption in _pgsql_password_encryption_allowed_values
+    fail_msg: "Unsupported PostgreSQL password encryption '{{ pgsql_password_encryption }}'. Supported values are '{{ _pgsql_password_encryption_allowed_values | join(', ') }}'."
+    success_msg: "PostgreSQL password encryption '{{ pgsql_password_encryption }}' is supported."
+
+- name: Validate PostgreSQL shared buffers
+  ansible.builtin.assert:
+    that:
+      - pgsql_shared_buffers | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_shared_buffers | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL shared buffers '{{ pgsql_shared_buffers }}'. Shared buffers must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL shared buffers '{{ pgsql_shared_buffers }}' is valid."
+
+- name: Validate PostgreSQL work memory
+  ansible.builtin.assert:
+    that:
+      - pgsql_work_mem | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_work_mem | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL work memory '{{ pgsql_work_mem }}'. Work memory must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL work memory '{{ pgsql_work_mem }}' is valid."
+
+- name: Validate PostgreSQL maintenance work memory
+  ansible.builtin.assert:
+    that:
+      - pgsql_maintenance_work_mem | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_maintenance_work_mem | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL maintenance work memory '{{ pgsql_maintenance_work_mem }}'. Maintenance work memory must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL maintenance work memory '{{ pgsql_maintenance_work_mem }}' is valid."
+
+- name: Validate PostgreSQL effective IO concurrency
+  ansible.builtin.assert:
+    that:
+      - pgsql_effective_io_concurrency | int >= 0
+      - pgsql_effective_io_concurrency | int <= 1000
+    fail_msg: "Invalid PostgreSQL effective IO concurrency '{{ pgsql_effective_io_concurrency }}'. Effective IO concurrency must be an integer between 0 and 1000."
+    success_msg: "PostgreSQL effective IO concurrency '{{ pgsql_effective_io_concurrency }}' is valid."
+
+- name: Validate PostgreSQL max worker processes
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_worker_processes | int > 0
+    fail_msg: "Invalid PostgreSQL max worker processes '{{ pgsql_max_worker_processes }}'. Max worker processes must be an integer greater than 0."
+    success_msg: "PostgreSQL max worker processes '{{ pgsql_max_worker_processes }}' is valid."
+
+- name: Validate PostgreSQL max parallel workers per gather
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_parallel_workers_per_gather | int > 0
+    fail_msg: "Invalid PostgreSQL max parallel workers per gather '{{ pgsql_max_parallel_workers_per_gather }}'. Max parallel workers per gather must be an integer greater than 0."
+    success_msg: "PostgreSQL max parallel workers per gather '{{ pgsql_max_parallel_workers_per_gather }}' is valid."
+
+- name: Validate PostgreSQL max parallel maintenance workers
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_parallel_maintenance_workers | int >= 0
+    fail_msg: "Invalid PostgreSQL max parallel maintenance workers '{{ pgsql_max_parallel_maintenance_workers }}'. Max parallel maintenance workers must be an integer greater than or equal to 0."
+    success_msg: "PostgreSQL max parallel maintenance workers '{{ pgsql_max_parallel_maintenance_workers }}' is valid."
+
+- name: Validate PostgreSQL max parallel workers
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_parallel_workers | int >= 0
+    fail_msg: "Invalid PostgreSQL max parallel workers '{{ pgsql_max_parallel_workers }}'. Max parallel workers must be an integer greater than or equal to 0."
+    success_msg: "PostgreSQL max parallel workers '{{ pgsql_max_parallel_workers }}' is valid."
+
+- name: Validate PostgreSQL WAL buffers
+  when:
+    - pgsql_wal_buffers is defined
+  ansible.builtin.assert:
+    that:
+      - pgsql_wal_buffers | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_wal_buffers | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL WAL buffers '{{ pgsql_wal_buffers }}'. WAL buffers must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL WAL buffers '{{ pgsql_wal_buffers }}' is valid."
+
+- name: Validate PostgreSQL checkpoint completion target
+  ansible.builtin.assert:
+    that:
+      - pgsql_checkpoint_completion_target | float >= 0
+      - pgsql_checkpoint_completion_target | float <= 1
+    fail_msg: "Invalid PostgreSQL checkpoint completion target '{{ pgsql_checkpoint_completion_target }}'. Checkpoint completion target must be a float between 0 and 1."
+    success_msg: "PostgreSQL checkpoint completion target '{{ pgsql_checkpoint_completion_target }}' is valid."
+
+- name: Validate PostgreSQL minimum WAL size
+  ansible.builtin.assert:
+    that:
+      - pgsql_min_wal_size | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_min_wal_size | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL minimum WAL size '{{ pgsql_min_wal_size }}'. Minimum WAL size must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL minimum WAL size '{{ pgsql_min_wal_size }}' is valid."
+
+- name: Validate PostgreSQL maximum WAL size
+  ansible.builtin.assert:
+    that:
+      - pgsql_max_wal_size | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_max_wal_size | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL maximum WAL size '{{ pgsql_max_wal_size }}'. Maximum WAL size must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL maximum WAL size '{{ pgsql_max_wal_size }}' is valid."
+
+- name: Validate PostgreSQL effective cache size
+  ansible.builtin.assert:
+    that:
+      - pgsql_effective_cache_size | regex_search('^[0-9]+(kB|MB|GB)$')
+      - pgsql_effective_cache_size | regex_replace('kB|MB|GB', '') | int > 0
+    fail_msg: "Invalid PostgreSQL effective cache size '{{ pgsql_effective_cache_size }}'. Effective cache size must be a number greater than 0 followed by kB, MB or GB."
+    success_msg: "PostgreSQL effective cache size '{{ pgsql_effective_cache_size }}' is valid."
+
+- name: Validate PostgreSQL default statistics target
+  ansible.builtin.assert:
+    that:
+      - pgsql_default_statistics_target | int > 0
+      - pgsql_default_statistics_target | int <= 10000
+    fail_msg: "Invalid PostgreSQL default statistics target '{{ pgsql_default_statistics_target }}'. Default statistics target must be an integer between 1 and 10000."
+    success_msg: "PostgreSQL default statistics target '{{ pgsql_default_statistics_target }}' is valid."
+
+- name: Validate PostgreSQL log rotation size
+  when:
+    - pgsql_log_to_stderr | bool or pgsql_log_to_csvlog | bool
+    - pgsql_logging_collector | bool
+  ansible.builtin.assert:
+    that:
+      - pgsql_log_rotation_size | string == '0' or
+        (pgsql_log_rotation_size | regex_search('^[0-9]+(kB|MB|GB)$') and
+        pgsql_log_rotation_size | regex_replace('kB|MB|GB', '') | int > 0)
+    fail_msg: "Invalid PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}'. Log rotation size must be a number greater than 0 followed by kB, MB or GB or 0."
+    success_msg: "PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}' is valid."
+
+- name: Validate PostgreSQL log minimum message level
+  ansible.builtin.assert:
+    that:
+      - pgsql_log_min_messages | upper in _pgsql_log_level_allowed_values
+    fail_msg: "Unsupported PostgreSQL log minimum level '{{ pgsql_log_min_messages }}'. Supported values are '{{ _pgsql_log_min_messages_allowed_values | join(', ') }}'."
+    success_msg: "PostgreSQL log minimum level '{{ pgsql_log_min_messages }}' is supported."
+
+- name: Validate PostgreSQL log minimum error level
+  ansible.builtin.assert:
+    that:
+      - pgsql_log_min_error_statement | upper in _pgsql_log_level_allowed_values
+    fail_msg: "Unsupported PostgreSQL log minimum error level '{{ pgsql_log_min_error_statement }}'. Supported values are '{{ _pgsql_log_min_error_statement_allowed_values | join(', ') }}'."
+    success_msg: "PostgreSQL log minimum error level '{{ pgsql_log_min_error_statement }}' is supported."
+
+- name: Validate PostgreSQL log error verbosity
+  ansible.builtin.assert:
+    that:
+      - pgsql_log_error_verbosity | upper in _pgsql_log_error_verboisty_allowed_values
+    fail_msg: "Unsupported PostgreSQL log error verbosity '{{ pgsql_log_error_verbosity }}'. Supported values are '{{ _pgsql_log_error_verboisty_allowed_values | join(', ') }}'."
+    success_msg: "PostgreSQL log error verbosity '{{ pgsql_log_error_verbosity }}' is supported."

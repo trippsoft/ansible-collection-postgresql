@@ -1,0 +1,21 @@
+---
+pgsql_install_timescaledb: true
+
+pgsql_ssl: true
+pgsql_ssl_ca_file: /etc/pki/ca-trust/source/anchors/rootca.pem
+pgsql_ssl_cert_file: /etc/pki/tls/certs/server.crt
+pgsql_ssl_key_file: /etc/pki/tls/private/server.key
+
+pgsql_log_to_csvlog: true
+pgsql_log_to_syslog: true
+
+pgsql_vault_ssl_mode: verify-full
+
+pgsql_users:
+  - name: test
+    role_attr_flags: SUPERUSER
+    database_privileges:
+      - database: postgres
+        privileges:
+          - ALL
+        state: present

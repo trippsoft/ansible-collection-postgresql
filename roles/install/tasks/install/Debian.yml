@@ -1,0 +1,68 @@
+---
+- name: Create PostgreSQL GPG key directory
+  become: true
+  ansible.builtin.file:
+    path: /usr/share/postgresql-common/pgdg
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install official PostgreSQL GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install official PostgreSQL repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    filename: pgdg
+
+- name: Install PostgreSQL packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-psycopg2
+      - "postgresql-{{ pgsql_major_version }}"
+    update_cache: true
+    state: present
+
+- name: Install pgAudit package
+  when:
+    - pgsql_install_pgaudit
+  become: true
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ pgsql_major_version }}-pgaudit"
+    state: present
+
+- name: Install TimescaleDB
+  when:
+    - pgsql_install_timescaledb
+  block:
+    - name: Add TimescaleDB GPG key
+      become: true
+      ansible.builtin.apt_key: 
+        url: https://packagecloud.io/timescale/timescaledb/gpgkey
+        keyring: /etc/apt/trusted.gpg.d/timescaledb.gpg
+        state: present
+
+    - name: Create TimescaleDB repository config file
+      become: true
+      ansible.builtin.apt_repository:
+        repo: "deb https://packagecloud.io/timescale/timescaledb/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main"
+        filename: timescaledb
+
+    - name: Install TimescaleDB package
+      become: true
+      ansible.builtin.apt:
+        name:
+          - "timescaledb-2-postgresql-{{ pgsql_major_version }}"
+        state: present
+        update_cache: true

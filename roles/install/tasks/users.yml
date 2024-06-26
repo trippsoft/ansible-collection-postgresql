@@ -1,0 +1,6 @@
+---
+- name: Ensure user is created
+  ansible.builtin.include_tasks: user.yml
+  with_items: "{{ pgsql_users }}"
+  loop_control:
+    loop_var: _pgsql_user

@@ -1,0 +1,21 @@
+---
+- name: Validate
+  ansible.builtin.import_tasks: validate.yml
+
+- name: Install
+  ansible.builtin.include_tasks: "install/{{ ansible_os_family }}.yml"
+
+- name: Initialize
+  ansible.builtin.import_tasks: initialize.yml
+
+- name: Configure
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Create databases
+  ansible.builtin.import_tasks: databases.yml
+
+- name: Create Hashicorp Vault connection
+  ansible.builtin.import_tasks: vault.yml
+
+- name: Create users
+  ansible.builtin.import_tasks: users.yml

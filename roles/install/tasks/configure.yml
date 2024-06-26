@@ -1,0 +1,58 @@
+---
+- name: Configure PostgreSQL
+  become: true
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "/var/lib/pgsql/{{ pgsql_major_version }}/data/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify:
+    - _pgsql_restart_postgresql
+
+- name: Configure logrotate for PostgreSQL
+  when:
+    - pgsql_configure_logrotate
+  become: true
+  ansible.builtin.template:
+    src: postgres.logrotate.j2
+    dest: /etc/logrotate.d/postgres
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure host-based authentication
+  become: true
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "/var/lib/pgsql/{{ pgsql_major_version }}/data/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify:
+    - _pgsql_restart_postgresql
+
+- name: Enable PostgreSQL service
+  become: true
+  ansible.builtin.systemd_service:
+    name: "postgresql-{{ pgsql_major_version }}.service"
+    enabled: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Start PostgreSQL service
+  become: true
+  ansible.builtin.systemd_service:
+    name: "postgresql-{{ pgsql_major_version }}.service"
+    state: started
+
+- name: Add firewalld rule for PostgreSQL
+  when:
+    - pgsql_configure_firewalld
+  become: true
+  ansible.posix.firewalld:
+    service: postgresql
+    state: enabled
+    permanent: true
+    immediate: true
