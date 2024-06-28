@@ -2,9 +2,14 @@
 - name: Ensure the file permissions mask is correct for postgres user
   become: true
   ansible.builtin.lineinfile:
-    path: /var/lib/pgsql/.bash_profile
+    path: "{{ _pgsql_base_directory }}/.bash_profile"
     regexp: '^umask'
     line: umask 077
+    state: present
+    create: true
+    owner: postgres
+    group: postgres
+    mode: '0640'
 
 - name: Create log directory
   when:
@@ -24,5 +29,5 @@
   vars:
     ansible_ssh_pipelining: true
   ansible.builtin.command:
-    cmd: "/usr/pgsql-{{ pgsql_major_version }}/bin/initdb -D /var/lib/pgsql/{{ pgsql_major_version }}/data"
-    creates: "/var/lib/pgsql/{{ pgsql_major_version }}/data/PG_VERSION"
+    cmd: "{{ _pgsql_initdb_path }} -D {{ _pgsql_data_directory }}"
+    creates: "{{ _pgsql_data_directory }}/PG_VERSION"

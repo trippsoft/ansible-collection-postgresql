@@ -1,0 +1,12 @@
+{{ ansible_managed | comment }}
+
+{{ pgsql_log_directory }}/*.log {
+    daily
+    missingok
+    rotate {{ pgsql_logrotate_retention }}
+    copytruncate
+    compress
+    delaycompress
+    notifempty
+    create {{ pgsql_log_file_mode | default('0600') }} postgres postgres
+}

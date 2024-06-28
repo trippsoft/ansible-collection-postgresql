@@ -3,7 +3,7 @@
   become: true
   ansible.builtin.template:
     src: postgresql.conf.j2
-    dest: "/var/lib/pgsql/{{ pgsql_major_version }}/data/postgresql.conf"
+    dest: "{{ _pgsql_conf_directory }}/postgresql.conf"
     owner: postgres
     group: postgres
     mode: '0600'
@@ -25,7 +25,7 @@
   become: true
   ansible.builtin.template:
     src: pg_hba.conf.j2
-    dest: "/var/lib/pgsql/{{ pgsql_major_version }}/data/pg_hba.conf"
+    dest: "{{ _pgsql_conf_directory }}/pg_hba.conf"
     owner: postgres
     group: postgres
     mode: '0600'
@@ -35,7 +35,7 @@
 - name: Enable PostgreSQL service
   become: true
   ansible.builtin.systemd_service:
-    name: "postgresql-{{ pgsql_major_version }}.service"
+    name: "{{ _pgsql_service_name }}"
     enabled: true
 
 - name: Flush handlers
@@ -44,15 +44,5 @@
 - name: Start PostgreSQL service
   become: true
   ansible.builtin.systemd_service:
-    name: "postgresql-{{ pgsql_major_version }}.service"
+    name: "{{ _pgsql_service_name }}"
     state: started
-
-- name: Add firewalld rule for PostgreSQL
-  when:
-    - pgsql_configure_firewalld
-  become: true
-  ansible.posix.firewalld:
-    service: postgresql
-    state: enabled
-    permanent: true
-    immediate: true

@@ -7,15 +7,15 @@ argument_specs:
     author: Jim Tarpley
     options:
       pgsql_major_version:
-        type: str
+        type: int
         required: false
-        default: '16'
+        default: 16
         choices:
-          - '12'
-          - '13'
-          - '14'
-          - '15'
-          - '16'
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
         description:
           - The major version of PostgreSQL to install.
       pgsql_install_pgaudit:
@@ -43,6 +43,15 @@ argument_specs:
         description:
           - Whether to configure firewalld to allow access to the PostgreSQL port.
           - If `pgsql_listen_on_local_only` is `true`, this defaults to `false`.
+          - Otherwise, this defaults to `true` on non-Ubuntu systems.
+      pgsql_configure_ufw:
+        type: bool
+        required: false
+        default: true
+        description:
+          - Whether to configure UFW to allow access to the PostgreSQL port.
+          - If `pgsql_listen_on_local_only` is `true`, this defaults to `false`.
+          - Otherwise, this defaults to `true` on Ubuntu systems.
       pgsql_timezone:
         type: str
         required: false
@@ -86,7 +95,6 @@ argument_specs:
       pgsql_vault_access_hostname:
         type: str
         required: false
-        default: '127.0.0.1'
         description:
           - The FQDN or IP address for Vault to use when connecting to the PostgreSQL server.
           - This is only used if `pgsql_configure_vault_database_connection` is `true`.

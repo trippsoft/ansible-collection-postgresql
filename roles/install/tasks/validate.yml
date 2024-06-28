@@ -19,7 +19,7 @@
     - ansible_os_family == 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution_major_version in _nginx_rhel_supported_versions
+      - ansible_distribution_major_version in _pgsql_rhel_supported_versions
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
     success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported"
 
@@ -28,7 +28,7 @@
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution in _nginx_non_rhel_supported_distribution_releases.keys()
+      - ansible_distribution in _pgsql_non_rhel_supported_distribution_releases.keys()
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
     success_msg: "{{ ansible_distribution }} is supported. Checking version."
 
@@ -37,7 +37,7 @@
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution_release in _nginx_non_rhel_supported_distribution_releases[ansible_distribution]
+      - ansible_distribution_release in _pgsql_non_rhel_supported_distribution_releases[ansible_distribution]
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is not supported"
     success_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is supported"
 
@@ -45,8 +45,8 @@
   ansible.builtin.assert:
     that:
       - pgsql_major_version | string in _pgsql_supported_major_versions
-    fail_msg: "Unsupported PostgreSQL major version '{{ pgsql_major_version }}'. Supported versions are '{{ _pgsql_supported_major_versions | join(', ') }}'."
-    success_msg: "PostgreSQL major version '{{ pgsql_major_version }}' is supported."
+    fail_msg: "Unsupported PostgreSQL major version '{{ pgsql_major_version | string }}'. Supported versions are '{{ _pgsql_supported_major_versions | join(', ') }}'."
+    success_msg: "PostgreSQL major version '{{ pgsql_major_version | string }}' is supported."
 
 - name: Validate PostgreSQL listen addresses
   ansible.builtin.assert:
@@ -81,13 +81,6 @@
       - pgsql_max_connections | int > 0
     fail_msg: "Invalid PostgreSQL max connections '{{ pgsql_max_connections }}'. Max connections must be an integer greater than 0."
     success_msg: "PostgreSQL max connections '{{ pgsql_max_connections }}' is valid."
-
-- name: Validate PostgreSQL password encryption
-  ansible.builtin.assert:
-    that:
-      - pgsql_password_encryption in _pgsql_password_encryption_allowed_values
-    fail_msg: "Unsupported PostgreSQL password encryption '{{ pgsql_password_encryption }}'. Supported values are '{{ _pgsql_password_encryption_allowed_values | join(', ') }}'."
-    success_msg: "PostgreSQL password encryption '{{ pgsql_password_encryption }}' is supported."
 
 - name: Validate PostgreSQL shared buffers
   ansible.builtin.assert:
@@ -210,24 +203,3 @@
         pgsql_log_rotation_size | regex_replace('kB|MB|GB', '') | int > 0)
     fail_msg: "Invalid PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}'. Log rotation size must be a number greater than 0 followed by kB, MB or GB or 0."
     success_msg: "PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}' is valid."
-
-- name: Validate PostgreSQL log minimum message level
-  ansible.builtin.assert:
-    that:
-      - pgsql_log_min_messages | upper in _pgsql_log_level_allowed_values
-    fail_msg: "Unsupported PostgreSQL log minimum level '{{ pgsql_log_min_messages }}'. Supported values are '{{ _pgsql_log_min_messages_allowed_values | join(', ') }}'."
-    success_msg: "PostgreSQL log minimum level '{{ pgsql_log_min_messages }}' is supported."
-
-- name: Validate PostgreSQL log minimum error level
-  ansible.builtin.assert:
-    that:
-      - pgsql_log_min_error_statement | upper in _pgsql_log_level_allowed_values
-    fail_msg: "Unsupported PostgreSQL log minimum error level '{{ pgsql_log_min_error_statement }}'. Supported values are '{{ _pgsql_log_min_error_statement_allowed_values | join(', ') }}'."
-    success_msg: "PostgreSQL log minimum error level '{{ pgsql_log_min_error_statement }}' is supported."
-
-- name: Validate PostgreSQL log error verbosity
-  ansible.builtin.assert:
-    that:
-      - pgsql_log_error_verbosity | upper in _pgsql_log_error_verboisty_allowed_values
-    fail_msg: "Unsupported PostgreSQL log error verbosity '{{ pgsql_log_error_verbosity }}'. Supported values are '{{ _pgsql_log_error_verboisty_allowed_values | join(', ') }}'."
-    success_msg: "PostgreSQL log error verbosity '{{ pgsql_log_error_verbosity }}' is supported."

@@ -10,7 +10,7 @@
   become: true
   ansible.builtin.dnf:
     name:
-      - https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+      - "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
     state: present
     disable_gpg_check: true
 
@@ -19,7 +19,7 @@
   ansible.builtin.dnf:
     name:
       - python3-psycopg2
-      - "postgresql{{ pgsql_major_version }}-server"
+      - "postgresql{{ pgsql_major_version | string }}-server"
     state: present
 
 - name: Install pgAudit package
@@ -35,17 +35,22 @@
   when:
     - pgsql_install_timescaledb
   block:
-    - name: Add TimescaleDB GPG key
-      become: true
-      ansible.builtin.rpm_key: 
-        key: https://packagecloud.io/timescale/timescaledb/gpgkey
-        state: present
-
     - name: Create TimescaleDB repository config file
       become: true
-      ansible.builtin.template:
-        src: timescale_timescaledb.repo.j2
-        dest: /etc/yum.repos.d/timescale_timescaledb.repo
+      ansible.builtin.yum_repository:
+        name: timescale_timescaledb
+        description: timescale_timescaledb
+        baseurl:
+          - "https://packagecloud.io/timescale/timescaledb/el/{{ ansible_distribution_major_version }}/$basearch"
+        repo_gpgcheck: true
+        gpgcheck: false
+        enabled: true
+        gpgkey:
+          - https://packagecloud.io/timescale/timescaledb/gpgkey
+        sslverify: true
+        sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+        metadata_expire: 300
+        state: present
         owner: root
         group: root
         mode: '0644'
@@ -54,6 +59,6 @@
       become: true
       ansible.builtin.dnf:
         name:
-          - "timescaledb-2-postgresql-{{ pgsql_major_version }}"
+          - "timescaledb-2-postgresql-{{ pgsql_major_version | string }}"
         state: present
         update_cache: true

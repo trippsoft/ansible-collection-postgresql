@@ -27,7 +27,7 @@ _pgsql_rhel_pgaudit_package_name_by_major_version:
   '16': pgaudit_16
 
 _pgsql_rhel_pgaudit_package_name: >-
-  {{ _pgsql_pgaudit_package_name_by_major_version[pgsql_major_version] }}
+  {{ _pgsql_rhel_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
 
 _pgsql_custom_listen_addresses: "{{ pgsql_listen_addresses | default([]) | join(',') }}"
 
@@ -49,30 +49,6 @@ _pgsql_log_destination_list: >-
   {{ _pgsql_stderr_log_destination + _pgsql_csvlog_log_destination + _pgsql_syslog_log_destination }}
 
 _pgsql_log_destination: "{{ _pgsql_log_destination_list | join(',') }}"
-
-_pgsql_log_level_allowed_values:
-  - DEBUG5
-  - DEBUG4
-  - DEBUG3
-  - DEBUG2
-  - DEBUG1
-  - LOG
-  - NOTICE
-  - WARNING
-  - ERROR
-  - FATAL
-  - PANIC
-
-_pgsql_log_error_verboisty_allowed_values:
-  - TERSE
-  - DEFAULT
-  - VERBOSE
-
-_pgsql_log_statement_allowed_values:
-  - none
-  - ddl
-  - mod
-  - all
 
 _pgsql_pgaudit_shared_preload_libraries: >-
   {{ ['pgaudit'] if pgsql_install_pgaudit else [] }}

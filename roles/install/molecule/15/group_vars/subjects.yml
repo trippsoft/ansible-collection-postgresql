@@ -1,4 +1,5 @@
 ---
+pgsql_major_version: 15
 pgsql_install_timescaledb: true
 
 pgsql_ssl: true

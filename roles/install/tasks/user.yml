@@ -24,20 +24,18 @@
     type: database
     state: "{{ item.state | default('present') }}"
 
-# TODO - Add module to trippsc2.hashi_vault
-
 - name: Create Hashicorp Vault static role
   when:
     - pgsql_configure_vault_database_connection
     - _pgsql_user.password is not defined
   delegate_to: localhost
-  pag.hashivault.hashivault_db_secret_engine_static_role:
-    authtype: token
+  trippsc2.hashi_vault.vault_database_static_role:
     token: "{{ vault_token | default(omit) }}"
     url: "{{ vault_url | default(omit) }}"
-    mount_point: "{{ pgsql_vault_database_mount_point }}"
+    engine_mount_point: "{{ pgsql_vault_database_mount_point }}"
     name: "{{ inventory_hostname }}_{{ _pgsql_user.name }}"
     db_name: "{{ inventory_hostname | lower }}"
-    username: "{{ _pgsql_user.name }}"
+    db_username: "{{ _pgsql_user.name }}"
     rotation_statements: []
     rotation_period: "{{ pgsql_password_rotation_period }}"
+    state: present

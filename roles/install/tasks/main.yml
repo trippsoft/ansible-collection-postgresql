@@ -2,6 +2,9 @@
 - name: Validate
   ansible.builtin.import_tasks: validate.yml
 
+- name: Include OS specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
 - name: Install
   ansible.builtin.include_tasks: "install/{{ ansible_os_family }}.yml"
 
@@ -10,6 +13,16 @@
 
 - name: Configure
   ansible.builtin.import_tasks: configure.yml
+
+- name: Configure firewalld
+  when:
+    - pgsql_configure_firewalld
+  ansible.builtin.include_tasks: firewalld.yml
+
+- name: Configure ufw
+  when:
+    - pgsql_configure_ufw
+  ansible.builtin.include_tasks: ufw.yml
 
 - name: Create databases
   ansible.builtin.import_tasks: databases.yml

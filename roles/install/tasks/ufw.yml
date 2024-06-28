@@ -1,0 +1,8 @@
+---
+- name: Add UFW rule for PostgreSQL
+  become: true
+  community.general.ufw:
+    port: "{{ pgsql_port }}"
+    proto: tcp
+    rule: allow
+    state: enabled

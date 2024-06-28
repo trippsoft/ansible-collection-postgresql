@@ -1,0 +1,9 @@
+---
+_pgsql_base_directory: /var/lib/pgsql
+_pgsql_data_directory: "{{ _pgsql_base_directory }}/{{ pgsql_major_version | string }}/data"
+_pgsql_service_name: "postgresql-{{ pgsql_major_version | string }}.service"
+_pgsql_initdb_path: "/usr/pgsql-{{ pgsql_major_version | string }}/bin/initdb"
+_pgsql_conf_directory: "{{ _pgsql_data_directory }}"
+
+_pgsql_default_configure_firewalld: "{{ not pgsql_listen_on_local_only }}"
+_pgsql_default_configure_ufw: false

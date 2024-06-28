@@ -23,6 +23,11 @@ galaxy_info:
           - jammy
           - noble
 
-collections: []
+collections:
+  - ansible.posix
+  - community.general
+  - community.hashi_vault
+  - community.postgresql
+  - trippsc2.hashi_vault
 
 dependencies: []

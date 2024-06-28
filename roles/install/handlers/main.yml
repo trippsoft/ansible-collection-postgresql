@@ -3,5 +3,5 @@
   listen: _pgsql_restart_postgresql
   become: true
   ansible.builtin.systemd_service:
-    name: "postgresql-{{ pgsql_major_version }}.service"
+    name: "{{ _pgsql_service_name }}"
     state: restarted

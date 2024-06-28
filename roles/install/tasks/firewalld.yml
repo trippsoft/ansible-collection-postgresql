@@ -1,0 +1,20 @@
+---
+- name: Add firewalld rule for PostgreSQL
+  when:
+    - pgsql_port == 5432
+  become: true
+  ansible.posix.firewalld:
+    service: postgresql
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Add firewalld rule for PostgreSQL
+  when:
+    - pgsql_port != 5432
+  become: true
+  ansible.posix.firewalld:
+    port: "{{ pgsql_port }}/tcp"
+    state: enabled
+    permanent: true
+    immediate: true

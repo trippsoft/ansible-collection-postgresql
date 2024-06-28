@@ -29,7 +29,7 @@
   ansible.builtin.apt:
     name:
       - python3-psycopg2
-      - "postgresql-{{ pgsql_major_version }}"
+      - "postgresql-{{ pgsql_major_version | string }}"
     update_cache: true
     state: present
 
@@ -39,7 +39,7 @@
   become: true
   ansible.builtin.apt:
     name:
-      - "postgresql-{{ pgsql_major_version }}-pgaudit"
+      - "postgresql-{{ pgsql_major_version | string }}-pgaudit"
     state: present
 
 - name: Install TimescaleDB
@@ -63,6 +63,6 @@
       become: true
       ansible.builtin.apt:
         name:
-          - "timescaledb-2-postgresql-{{ pgsql_major_version }}"
+          - "timescaledb-2-postgresql-{{ pgsql_major_version | string }}"
         state: present
         update_cache: true

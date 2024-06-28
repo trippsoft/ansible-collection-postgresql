@@ -1,0 +1,111 @@
+{{ ansible_managed | comment }}
+
+data_directory = '{{ _pgsql_data_directory }}'
+hba_file = '{{ _pgsql_conf_directory }}/pg_hba.conf'
+ident_file = '{{ _pgsql_conf_directory }}/pg_ident.conf'
+
+listen_addresses = '{{ _pgsql_listen_addresses }}'
+port = {{ pgsql_port }}
+
+max_connections = {{ pgsql_max_connections }}
+
+password_encryption = {{ pgsql_password_encryption }}
+
+ssl = {{ pgsql_ssl | ternary('on', 'off') }}
+
+{% if pgsql_ssl %}
+{% if pgsql_ssl_ca_file is defined %}
+ssl_ca_file = '{{ pgsql_ssl_ca_file }}'
+{% endif %}
+ssl_cert_file = '{{ pgsql_ssl_cert_file }}'
+ssl_key_file = '{{ pgsql_ssl_key_file }}'
+ssl_min_protocol_version = '{{ pgsql_ssl_min_protocol_version }}'
+
+{% endif %}
+shared_buffers = {{ pgsql_shared_buffers }}
+work_mem = {{ pgsql_work_mem }}
+maintenance_work_mem = {{ pgsql_maintenance_work_mem }}
+
+dynamic_shared_memory_type = posix
+
+effective_io_concurrency = {{ pgsql_effective_io_concurrency }}
+max_worker_processes = {{ pgsql_max_worker_processes }}
+max_parallel_workers_per_gather = {{ pgsql_max_parallel_workers_per_gather }}
+max_parallel_maintenance_workers = {{ pgsql_max_parallel_maintenance_workers }}
+max_parallel_workers = {{ pgsql_max_parallel_workers }}
+
+{% if pgsql_wal_buffers is defined %}
+wal_buffers = {{ pgsql_wal_buffers }}
+
+{% endif %}
+checkpoint_completion_target = {{ pgsql_checkpoint_completion_target }}
+
+max_wal_size = {{ pgsql_max_wal_size }}
+min_wal_size = {{ pgsql_min_wal_size }}
+
+max_logical_replication_workers = {{ pgsql_max_worker_processes }}
+
+random_page_cost = {{ pgsql_random_page_cost }}
+
+effective_cache_size = {{ pgsql_effective_cache_size }}
+
+default_statistics_target = {{ pgsql_default_statistics_target }}
+
+log_destination = '{{ _pgsql_log_destination }}'
+
+{% if pgsql_log_to_stderr or pgsql_log_to_csvlog %}
+logging_collector = {{ pgsql_logging_collector | ternary('on', 'off') }}
+
+{% if pgsql_logging_collector %}
+log_directory = '{{ pgsql_log_directory }}'
+log_filename = '{{ pgsql_log_filename }}'
+
+log_file_mode = {{ pgsql_log_file_mode }}
+
+log_rotation_age = {{ pgsql_log_rotation_age }}
+log_rotation_size = {{ pgsql_log_rotation_size }}
+
+log_truncate_on_rotation = {{ pgsql_log_truncate_on_rotation | ternary('on', 'off') }}
+
+{% endif %}
+{% endif %}
+{% if pgsql_log_to_syslog %}
+syslog_facility = '{{ pgsql_syslog_facility }}'
+syslog_ident = '{{ pgsql_syslog_ident }}'
+syslog_sequence_numbers = {{ pgsql_syslog_sequence_numbers | ternary('on', 'off') }}
+syslog_split_messages = {{ pgsql_syslog_split_messages | ternary('on', 'off') }}
+
+{% endif %}
+log_min_messages = {{ pgsql_log_min_messages | upper }}
+log_min_error_statement = {{ pgsql_log_min_error_statement | upper }}
+
+debug_print_parse = {{ pgsql_debug_print_parse | ternary('on', 'off') }}
+debug_print_rewritten = {{ pgsql_debug_print_rewritten | ternary('on', 'off') }}
+debug_print_plan = {{ pgsql_debug_print_plan | ternary('on', 'off') }}
+debug_pretty_print = {{ pgsql_debug_pretty_print | ternary('on', 'off') }}
+
+log_connections = {{ pgsql_log_connections | ternary('on', 'off') }}
+log_disconnections = {{ pgsql_log_disconnections | ternary('on', 'off') }}
+
+log_error_verbosity = {{ pgsql_log_error_verbosity }}
+
+log_hostname = {{ pgsql_log_hostname | ternary('on', 'off') }}
+log_line_prefix = '{{ pgsql_log_line_prefix }}'
+log_statement = '{{ pgsql_log_statement }}'
+log_timezone = '{{ pgsql_log_timezone }}'
+
+datestyle = 'iso, mdy'
+timezone = '{{ pgsql_timezone }}'
+
+lc_messages = 'en_US.UTF-8'
+lc_monetary = 'en_US.UTF-8'
+lc_numeric = 'en_US.UTF-8'
+lc_time = 'en_US.UTF-8'
+
+default_text_search_config = 'pg_catalog.english'
+
+shared_preload_libraries = '{{ _pgsql_shared_preload_libraries }}'
+
+{% if pgsql_install_pgaudit %}
+pgaudit.log = '{{ _pgsql_pgaudit_log }}'
+{% endif %}
