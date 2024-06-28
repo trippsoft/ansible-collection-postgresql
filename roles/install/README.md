@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.0.0
+Version: 1.0.1
 
 This role installs and does initial configuration for PostgreSQL on Linux machines.
 
@@ -26,7 +26,7 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 ## Role Arguments
 |Option|Description|Type|Required|Choices|Default|
 |---|---|---|---|---|---|
-| pgsql_major_version | <p>The major version of PostgreSQL to install.</p> | int | no | <ul><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li></ul> | 16 |
+| pgsql_major_version | <p>The major version of PostgreSQL to install.</p> | int | no | <ul><li>13</li><li>14</li><li>15</li><li>16</li></ul> | 16 |
 | pgsql_install_pgaudit | <p>Whether to install the PGAudit extension.</p> | bool | no |  | true |
 | pgsql_install_timescaledb | <p>Whether to install the TimescaleDB extension.</p> | bool | no |  | false |
 | pgsql_configure_logrotate | <p>Whether to configure log rotation for the PostgreSQL log files.</p> | bool | no |  | true |
