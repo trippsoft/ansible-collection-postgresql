@@ -1,19 +1,4 @@
 ---
-- name: Gathering Facts
-  when:
-    - ansible_os_family is not defined or
-      ansible_distribution is not defined or
-      ansible_distribution_major_version is not defined or
-      ansible_distribution_release is not defined
-  ansible.builtin.setup:
-    gather_subset:
-      - '!all'
-      - '!min'
-      - os_family
-      - distribution
-      - distribution_major_version
-      - distribution_release
-
 - name: Validate RHEL major version
   when:
     - ansible_os_family == 'RedHat'

@@ -1,5 +1,5 @@
 ---
-- name: Prepare Vault
+- name: Prepare
   hosts:
     - linux
   pre_tasks:
@@ -16,24 +16,22 @@
         echo "Warning: Python not bootstrapped due to unknown platform."
         )
       changed_when: false
-  roles:
-    - role: trippsc2.hashi_vault.testing_ca
 
-- name: Prepare
-  hosts:
-    - linux
-  pre_tasks:
     - name: Set OS variables (Debian-based)
       when:
         - ansible_os_family == 'Debian'
       ansible.builtin.set_fact:
         _pgsql_home_directory: /var/lib/postgresql
+        _cert_directory: /etc/ssl/certs
+        _private_key_directory: /etc/ssl/private
 
     - name: Set OS variables (Red Hat-based)
       when:
         - ansible_os_family == 'RedHat'
       ansible.builtin.set_fact:
         _pgsql_home_directory: /var/lib/pgsql
+        _cert_directory: /etc/pki/tls/certs
+        _private_key_directory: /etc/pki/tls/private
 
     - name: Create postgres group
       become: true
@@ -41,7 +39,7 @@
         name: postgres
         state: present
         system: true
-    
+
     - name: Create postgres user
       become: true
       ansible.builtin.user:
@@ -49,25 +47,14 @@
         group: postgres
         system: true
         shell: /usr/sbin/nologin
+        password: '!'
+        password_lock: true
         home: "{{ _pgsql_home_directory }}"
         createhome: false
         comment: PostgreSQL Server
         state: present
- 
-    - name: Set root CA directory variable (Debian-based)
-      when:
-        - ansible_os_family == 'Debian'
-      ansible.builtin.set_fact:
-        _cert_directory: /etc/ssl/certs
-        _private_key_directory: /etc/ssl/private
-
-    - name: Set root CA directory variable (Red Hat-based)
-      when:
-        - ansible_os_family == 'RedHat'
-      ansible.builtin.set_fact:
-        _cert_directory: /etc/pki/tls/certs
-        _private_key_directory: /etc/pki/tls/private
   roles:
+    - role: trippsc2.hashi_vault.testing_ca
     - role: trippsc2.hashi_vault.signed_certificate
       vars:
         cert_certificate_path: "{{ _cert_directory }}/server.crt"
