@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.0.1
+Version: 1.0.2
 
 This role installs and does initial configuration for PostgreSQL on Linux machines.
 

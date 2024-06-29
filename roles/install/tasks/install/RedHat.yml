@@ -28,7 +28,7 @@
   become: true
   ansible.builtin.dnf:
     name:
-      - "{{ _pgsql_rhel_pgaudit_package_name }}"
+      - "{{ _pgsql_el_pgaudit_package_name }}"
     state: present
 
 - name: Install TimescaleDB

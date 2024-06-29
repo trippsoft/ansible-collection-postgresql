@@ -1,9 +1,9 @@
 ---
-_pgsql_rhel_supported_versions:
+_pgsql_el_supported_versions:
   - '8'
   - '9'
 
-_pgsql_non_rhel_supported_distribution_releases:
+_pgsql_non_el_supported_distribution_releases:
   Debian:
     - bookworm
     - bullseye
@@ -18,14 +18,14 @@ _pgsql_supported_major_versions:
   - '15'
   - '16'
 
-_pgsql_rhel_pgaudit_package_name_by_major_version:
+_pgsql_el_pgaudit_package_name_by_major_version:
   '13': pgaudit15_13
   '14': pgaudit16_14
   '15': pgaudit17_15
   '16': pgaudit_16
 
-_pgsql_rhel_pgaudit_package_name: >-
-  {{ _pgsql_rhel_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
+_pgsql_el_pgaudit_package_name: >-
+  {{ _pgsql_el_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
 
 _pgsql_custom_listen_addresses: "{{ pgsql_listen_addresses | default([]) | join(',') }}"
 

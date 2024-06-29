@@ -1,28 +1,28 @@
 ---
-- name: Validate RHEL major version
+- name: Validate EL major version
   when:
     - ansible_os_family == 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution_major_version in _pgsql_rhel_supported_versions
+      - ansible_distribution_major_version in _pgsql_el_supported_versions
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
     success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported"
 
-- name: Validate non-RHEL distribution
+- name: Validate non-EL distribution
   when:
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution in _pgsql_non_rhel_supported_distribution_releases.keys()
+      - ansible_distribution in _pgsql_non_el_supported_distribution_releases.keys()
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
     success_msg: "{{ ansible_distribution }} is supported. Checking version."
 
-- name: Validate non-RHEL distribution release
+- name: Validate non-EL distribution release
   when:
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution_release in _pgsql_non_rhel_supported_distribution_releases[ansible_distribution]
+      - ansible_distribution_release in _pgsql_non_el_supported_distribution_releases[ansible_distribution]
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is not supported"
     success_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is supported"
 
