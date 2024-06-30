@@ -10,7 +10,7 @@
         _pgsql_package_name: postgresql-16
         _pgsql_service_name: postgresql.service
 
-    - name: Set OS variables (Red Hat-based)
+    - name: Set OS variables (EL)
       when:
         - ansible_os_family == 'RedHat'
       ansible.builtin.set_fact:

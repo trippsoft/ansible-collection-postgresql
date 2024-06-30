@@ -25,7 +25,7 @@
         _cert_directory: /etc/ssl/certs
         _private_key_directory: /etc/ssl/private
 
-    - name: Set OS variables (Red Hat-based)
+    - name: Set OS variables (EL)
       when:
         - ansible_os_family == 'RedHat'
       ansible.builtin.set_fact:
