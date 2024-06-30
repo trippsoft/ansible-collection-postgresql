@@ -12,12 +12,36 @@ platforms:
     box: jtarpley/${MOLECULE_BOX:-rocky8_cis}
     memory: 2048
     cpus: 2
+    groups:
+      - subjects
 provisioner:
   name: ansible
   inventory:
-    links:
-      hosts: ./hosts
-      host_vars: ./host_vars/
-      group_vars: ./group_vars/
+    group_vars:
+      all:
+        vault_token: 47542cbc-6bf8-4fba-8eda-02e0a0d29a0a
+        vault_url: "http://{{ hostvars['linux'].ansible_host }}:8200"
+      subjects:
+        pgsql_major_version: ${MOLECULE_PGSQL_MAJOR_VERSION:-16}
+        pgsql_install_timescaledb: true
+        pgsql_ssl: true
+        pgsql_ssl_ca_file: >-
+          {{ '/etc/pki/ca-trust/source/anchors/ca_chain.crt' if ansible_os_family == 'RedHat' else '/usr/local/share/ca-certificates/ca_chain.crt' }}
+        pgsql_ssl_cert_file: >-
+          {{ '/etc/pki/tls/certs/server.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/server.crt' }}
+        pgsql_ssl_key_file: >-
+          {{ '/etc/pki/tls/private/server.key' if ansible_os_family == 'RedHat' else '/etc/ssl/private/server.key' }}
+        pgsql_log_to_csvlog: true
+        pgsql_log_to_syslog: true
+        pgsql_vault_ssl_mode: verify-full
+        pgsql_users:
+          - name: test
+            role_attr_flags: SUPERUSER
+            database_privileges:
+              - database: postgres
+                privileges:
+                  - ALL
+                state: present
+        pgsql_vault_access_hostname: "{{ ansible_fqdn }}"
 verifier:
   name: ansible
