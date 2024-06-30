@@ -161,8 +161,8 @@ argument_specs:
           - This is mutually exclusive with `pgsql_listen_on_local_only`.
       pgsql_listen_addresses:
         type: list
-        elements: str
         required: false
+        elements: str
         description:
           - A list of IP addresses on which the PostgreSQL server should listen.
           - This is required if `pgsql_listen_on_all_addresses` and `pgsql_listen_on_local_only` are `false`. Otherwise, it is ignored.
@@ -505,11 +505,11 @@ argument_specs:
           - The timezone to use for timestamps in the log file.
       pgsql_pgaudit_log:
         type: list
-        elements: str
         required: false
         default:
           - DDL
           - WRITE
+        elements: str
         choices:
           - READ
           - WRITE
@@ -524,34 +524,34 @@ argument_specs:
           - See https://github.com/pgaudit/pgaudit/blob/master/README.md#pgauditlog for more information.
       pgsql_additional_shared_preload_libraries:
         type: list
-        elements: str
         required: false
+        elements: str
         description:
           - A list of additional shared libraries to preload.
           - This is not including PGAudit or TimescaleDB, if `pgsql_install_pgaudit` or `pgsql_install_timescaledb` are `true` respectively.
       pgsql_vault_ip_addresses:
         type: list
-        elements: str
         required: false
         default: []
+        elements: str
         description:
           - A list of IP addresses from which HashiCorp Vault will access the PostgreSQL server.
           - This is only used if `pgsql_configure_vault_database_connection` is `true`.
           - This should not include the loopback address.
       pgsql_monitoring_ip_addresses:
         type: list
-        elements: str
         required: false
         default: []
+        elements: str
         description:
           - A list of IP addresses from which monitoring services will access the PostgreSQL server.
           - This is only used if `pgsql_configure_monitoring` is `true`.
           - This should not include the loopback address.
       pgsql_additional_hba_entries:
         type: list
-        elements: dict
         required: false
         default: []
+        elements: dict
         description:
           - A list of additional host-based authentication entries.
           - This should include any external services that need to access the PostgreSQL server.
@@ -615,9 +615,9 @@ argument_specs:
               - See https://www.postgresql.org/docs/current/auth-pg-hba-conf.html#AUTH-PG-HBA-CONF for more information.
       pgsql_databases:
         type: list
-        elements: dict
         required: false
         default: []
+        elements: dict
         description:
           - A list of databases to create.
         options:
@@ -661,9 +661,9 @@ argument_specs:
               - The expected state of the database.
       pgsql_users:
         type: list
-        elements: dict
         required: false
         default: []
+        elements: dict
         description:
           - A list of users to create.
         options:
@@ -681,9 +681,9 @@ argument_specs:
               - If Vault is managing the password, this should not be provided.
           role_attr_flags:
             type: list
-            elements: str
             required: false
             default: []
+            elements: str
             description:
               - The options to add to the user during creation.
               - See https://www.postgresql.org/docs/current/sql-createrole.html for more information.
@@ -698,9 +698,9 @@ argument_specs:
               - The expected state of the user.
           database_privileges:
             type: list
-            elements: dict
             required: false
             default: []
+            elements: dict
             description:
               - A list of database privileges to grant to the user.
             options:
@@ -711,8 +711,8 @@ argument_specs:
                   - The name of the database to which the privilege applies.
               privileges:
                 type: list
-                elements: str
                 required: true
+                elements: str
                 description:
                   - A list of privileges to grant to the user.
                   - See https://www.postgresql.org/docs/current/sql-grant.html for more information.
