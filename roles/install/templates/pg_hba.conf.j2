@@ -1,5 +1,12 @@
 {{ ansible_managed | comment }}
 
 {% for client in _pgsql_hba_entries %}
-{{ client.type }} {{ client.database }} {{ client.user }} {{ client.address | default('') }} {{ client.ip_address | default('') }} {{ client.ip_mask | default('') }} {{ client.auth_method }} {{ client.auth_options | default("") }}
+{{ client.type -}}
+{{- ' ' + client.database | string -}}
+{{- ' ' + client.user | string -}}
+{{- ' ' + client.address | string if client.address is defined -}}
+{{- ' ' + client.ip_address | string if client.ip_address is defined -}}
+{{- ' ' + client.ip_mask | string if client.ip_mask is defined -}}
+{{- ' ' + client.auth_method | string -}}
+{{- ' ' + client.auth_options | string if client.auth_options is defined else '' }}
 {% endfor %}

@@ -7,15 +7,15 @@
       when:
         - ansible_os_family == 'Debian'
       ansible.builtin.set_fact:
-        _pgsql_package_name: postgresql-16
+        _pgsql_package_name: "postgresql-{{ pgsql_major_version }}"
         _pgsql_service_name: postgresql.service
 
     - name: Set OS variables (EL)
       when:
         - ansible_os_family == 'RedHat'
       ansible.builtin.set_fact:
-        _pgsql_package_name: postgresql16-server
-        _pgsql_service_name: postgresql-16.service
+        _pgsql_package_name: "postgresql{{ pgsql_major_version }}-server"
+        _pgsql_service_name: "postgresql-{{ pgsql_major_version }}.service"
 
     - name: Check if PostgreSQL is installed
       become: true
