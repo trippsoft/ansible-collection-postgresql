@@ -46,6 +46,13 @@
   when:
     - pgsql_install_timescaledb
   block:
+    - name: Install GPG utilities
+      become: true
+      ansible.builtin.apt:
+        name:
+          - gnupg
+        state: present
+
     - name: Add TimescaleDB GPG key
       become: true
       ansible.builtin.apt_key: 
