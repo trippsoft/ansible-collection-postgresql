@@ -3,19 +3,8 @@
   hosts:
     - subjects
   tasks:
-    - name: Set OS variables (Debian-based)
-      when:
-        - ansible_os_family == 'Debian'
-      ansible.builtin.set_fact:
-        _pgsql_package_name: "postgresql-{{ pgsql_major_version }}"
-        _pgsql_service_name: postgresql.service
-
-    - name: Set OS variables (EL)
-      when:
-        - ansible_os_family == 'RedHat'
-      ansible.builtin.set_fact:
-        _pgsql_package_name: "postgresql{{ pgsql_major_version }}-server"
-        _pgsql_service_name: "postgresql-{{ pgsql_major_version }}.service"
+    - name: Set facts
+      ansible.builtin.import_tasks: facts.yml
 
     - name: Check if PostgreSQL is installed
       become: true
@@ -26,12 +15,12 @@
         state: present
       register: _package_installed
 
-    - name: Assert
+    - name: Verify PostgreSQL is installed
       ansible.builtin.assert:
         that:
           - not _package_installed.changed
-        fail_msg: PostgreSQL not installed
-        success_msg: PostgreSQL installed
+        fail_msg: PostgreSQL not installed.
+        success_msg: PostgreSQL installed.
 
     - name: Check if PostgreSQL service is enabled
       become: true
@@ -41,12 +30,12 @@
         enabled: true
       register: _service_enabled
 
-    - name: Assert
+    - name: Verify PostgreSQL service is enabled
       ansible.builtin.assert:
         that:
           - not _service_enabled.changed
-        fail_msg: PostgreSQL service not enabled
-        success_msg: PostgreSQL service enabled
+        fail_msg: PostgreSQL service not enabled.
+        success_msg: PostgreSQL service enabled.
 
     - name: Check if PostgreSQL service is running
       become: true
@@ -56,9 +45,12 @@
         state: started
       register: _service_running
 
-    - name: Assert
+    - name: Verify PostgreSQL service is running
       ansible.builtin.assert:
         that:
           - not _service_running.changed
-        fail_msg: PostgreSQL service not running
-        success_msg: PostgreSQL service running
+        fail_msg: PostgreSQL service not running.
+        success_msg: PostgreSQL service running.
+
+    - name: Verify postgresql.conf
+      ansible.builtin.import_tasks: postgresql.conf.yml

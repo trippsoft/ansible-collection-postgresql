@@ -1,0 +1,561 @@
+---
+- name: Set OS variables (Debian-based)
+  when:
+    - ansible_os_family == 'Debian'
+  ansible.builtin.set_fact:
+    _pgsql_package_name: "postgresql-{{ pgsql_major_version }}"
+    _pgsql_service_name: postgresql.service
+    _pgsql_data_directory: "/var/lib/postgresql/{{ pgsql_major_version | string }}/main"
+    _pgsql_conf_directory: "/etc/postgresql/{{ pgsql_major_version | string }}/main"
+    _pgsql_default_firewall_type: >-
+      {{ 'ufw' if ansible_distribution == 'Ubuntu' else 'firewalld' }}
+
+- name: Set OS variables (EL)
+  when:
+    - ansible_os_family == 'RedHat'
+  ansible.builtin.set_fact:
+    _pgsql_package_name: "postgresql{{ pgsql_major_version }}-server"
+    _pgsql_service_name: "postgresql-{{ pgsql_major_version }}.service"
+    _pgsql_data_directory: "/var/lib/pgsql/{{ pgsql_major_version | string }}/data"
+    _pgsql_conf_directory: "/var/lib/pgsql/{{ pgsql_major_version | string }}/data"
+    _pgsql_default_firewall_type: firewalld
+
+- name: Set pgsql_listen_on_local_only variable
+  when:
+    - pgsql_listen_addresses is not defined
+  ansible.builtin.set_fact:
+    pgsql_listen_on_local_only: false
+
+- name: Set pgsql_listen_on_all_addresses variable
+  when:
+    - pgsql_listen_addresses is not defined
+  ansible.builtin.set_fact:
+    pgsql_listen_on_all_addresses: true
+
+- name: Set pgsql_configure_firewall variable
+  when:
+    - pgsql_configure_firewall is not defined
+  ansible.builtin.set_fact:
+    pgsql_configure_firewall: true
+
+- name: Set pgsql_configure_monitoring variable
+  when:
+    - pgsql_configure_monitoring is not defined
+  ansible.builtin.set_fact:
+    pgsql_configure_monitoring: true
+
+- name: Set pgsql_configure_logrotate variable
+  when:
+    - pgsql_configure_logrotate is not defined
+  ansible.builtin.set_fact:
+    pgsql_configure_logrotate: true
+
+- name: Set pgsql_major_version variable
+  when:
+    - pgsql_major_version is not defined
+  ansible.builtin.set_fact:
+    pgsql_major_version: 13
+
+- name: Set pgsql_install_pgaudit variable
+  when:
+    - pgsql_install_pgaudit is not defined
+  ansible.builtin.set_fact:
+    pgsql_install_pgaudit: true
+
+- name: Set pgsql_install_timescaledb variable
+  when:
+    - pgsql_install_timescaledb is not defined
+  ansible.builtin.set_fact:
+    pgsql_install_timescaledb: false
+
+- name: Set pgsql_port variable
+  when:
+    - pgsql_port is not defined
+  ansible.builtin.set_fact:
+    pgsql_port: 5432
+
+- name: Set pgsql_max_connections variable
+  when:
+    - pgsql_max_connections is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_connections: 100
+
+- name: Set pgsql_password_encryption variable
+  when:
+    - pgsql_password_encryption is not defined
+  ansible.builtin.set_fact:
+    pgsql_password_encryption: scram-sha-256
+
+- name: Set pgsql_ssl variable
+  when:
+    - pgsql_ssl is not defined
+  ansible.builtin.set_fact:
+    pgsql_ssl: false
+
+- name: Set pgsql_ssl_cert_file variable
+  when:
+    - pgsql_ssl_cert_file is not defined
+  ansible.builtin.set_fact:
+    pgsql_ssl_cert_file: server.crt
+
+- name: Set pgsql_ssl_key_file variable
+  when:
+    - pgsql_ssl_key_file is not defined
+  ansible.builtin.set_fact:
+    pgsql_ssl_key_file: server.key
+
+- name: Set pgsql_ssl_min_protocol_version variable
+  when:
+    - pgsql_ssl_min_protocol_version is not defined
+  ansible.builtin.set_fact:
+    pgsql_ssl_min_protocol_version: TLSv1.2
+
+- name: Set pgsql_shared_buffers variable
+  when:
+    - pgsql_shared_buffers is not defined
+  ansible.builtin.set_fact:
+    pgsql_shared_buffers: 128MB
+
+- name: Set pgsql_work_mem variable
+  when:
+    - pgsql_work_mem is not defined
+  ansible.builtin.set_fact:
+    pgsql_work_mem: 4MB
+
+- name: Set pgsql_maintenance_work_mem variable
+  when:
+    - pgsql_maintenance_work_mem is not defined
+  ansible.builtin.set_fact:
+    pgsql_maintenance_work_mem: 64MB
+
+- name: Set pgsql_min_wal_size variable
+  when:
+    - pgsql_min_wal_size is not defined
+  ansible.builtin.set_fact:
+    pgsql_min_wal_size: 80MB
+
+- name: Set pgsql_max_wal_size variable
+  when:
+    - pgsql_max_wal_size is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_wal_size: 1GB
+
+- name: Set pgsql_effective_io_concurrency variable
+  when:
+    - pgsql_effective_io_concurrency is not defined
+  ansible.builtin.set_fact:
+    pgsql_effective_io_concurrency: 1
+
+- name: Set pgsql_max_worker_processes variable
+  when:
+    - pgsql_max_worker_processes is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_worker_processes: 8
+
+- name: Set pgsql_max_parallel_workers_per_gather variable
+  when:
+    - pgsql_max_parallel_workers_per_gather is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_parallel_workers_per_gather: 2
+
+- name: Set pgsql_max_parallel_workers variable
+  when:
+    - pgsql_max_parallel_workers is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_parallel_workers: 8
+
+- name: Set pgsql_max_parallel_maintenance_workers variable
+  when:
+    - pgsql_max_parallel_maintenance_workers is not defined
+  ansible.builtin.set_fact:
+    pgsql_max_parallel_maintenance_workers: 2
+
+- name: Set pgsql_checkpoint_completion_target variable
+  when:
+    - pgsql_checkpoint_completion_target is not defined
+  ansible.builtin.set_fact:
+    pgsql_checkpoint_completion_target: 0.9
+
+- name: Set pgsql_random_page_cost variable
+  when:
+    - pgsql_random_page_cost is not defined
+  ansible.builtin.set_fact:
+    pgsql_random_page_cost: 4.0
+
+- name: Set pgsql_effective_cache_size variable
+  when:
+    - pgsql_effective_cache_size is not defined
+  ansible.builtin.set_fact:
+    pgsql_effective_cache_size: 4GB
+
+- name: Set pgsql_default_statistics_target variable
+  when:
+    - pgsql_default_statistics_target is not defined
+  ansible.builtin.set_fact:
+    pgsql_default_statistics_target: 100
+
+- name: Set pgsql_log_to_stderr variable
+  when:
+    - pgsql_log_to_stderr is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_to_stderr: true
+
+- name: Set pgsql_log_to_csvlog variable
+  when:
+    - pgsql_log_to_csvlog is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_to_csvlog: false
+
+- name: Set pgsql_log_to_syslog variable
+  when:
+    - pgsql_log_to_syslog is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_to_syslog: false
+
+- name: Set pgsql_logging_collector variable
+  when:
+    - pgsql_logging_collector is not defined
+  ansible.builtin.set_fact:
+    pgsql_logging_collector: true
+
+- name: Set pgsql_log_directory variable
+  when:
+    - pgsql_log_directory is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_directory: /var/log/postgres
+
+- name: Set pgsql_log_filename variable
+  when:
+    - pgsql_log_filename is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_filename: postgresql.log
+
+- name: Set pgsql_log_file_mode variable
+  when:
+    - pgsql_log_file_mode is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_file_mode: '0600'
+
+- name: Set pgsql_log_rotation_age variable
+  when:
+    - pgsql_log_rotation_age is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_rotation_age: "{{ '0' if pgsql_configure_logrotate else '1d' }}"
+
+- name: Set pgsql_log_rotation_size variable
+  when:
+    - pgsql_log_rotation_size is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_rotation_size: "{{ '0' if pgsql_configure_logrotate else '10MB' }}"
+
+- name: Set pgsql_log_truncate_on_rotation variable
+  when:
+    - pgsql_log_truncate_on_rotation is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_truncate_on_rotation: true
+
+- name: Set pgsql_syslog_facility variable
+  when:
+    - pgsql_syslog_facility is not defined
+  ansible.builtin.set_fact:
+    pgsql_syslog_facility: LOCAL0
+
+- name: Set pgsql_syslog_ident variable
+  when:
+    - pgsql_syslog_ident is not defined
+  ansible.builtin.set_fact:
+    pgsql_syslog_ident: postgres
+
+- name: Set pgsql_syslog_sequence_numbers variable
+  when:
+    - pgsql_syslog_sequence_numbers is not defined
+  ansible.builtin.set_fact:
+    pgsql_syslog_sequence_numbers: true
+
+- name: Set pgsql_syslog_split_messages variable
+  when:
+    - pgsql_syslog_split_messages is not defined
+  ansible.builtin.set_fact:
+    pgsql_syslog_split_messages: true
+
+- name: Set pgsql_log_min_messages variable
+  when:
+    - pgsql_log_min_messages is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_min_messages: WARNING
+
+- name: Set pgsql_log_min_error_statement variable
+  when:
+    - pgsql_log_min_error_statement is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_min_error_statement: ERROR
+
+- name: Set pgsql_debug_print_parse variable
+  when:
+    - pgsql_debug_print_parse is not defined
+  ansible.builtin.set_fact:
+    pgsql_debug_print_parse: false
+
+- name: Set pgsql_debug_print_rewritten variable
+  when:
+    - pgsql_debug_print_rewritten is not defined
+  ansible.builtin.set_fact:
+    pgsql_debug_print_rewritten: false
+
+- name: Set pgsql_debug_print_plan variable
+  when:
+    - pgsql_debug_print_plan is not defined
+  ansible.builtin.set_fact:
+    pgsql_debug_print_plan: false
+
+- name: Set pgsql_debug_pretty_print variable
+  when:
+    - pgsql_debug_pretty_print is not defined
+  ansible.builtin.set_fact:
+    pgsql_debug_pretty_print: true
+
+- name: Set pgsql_log_connections variable
+  when:
+    - pgsql_log_connections is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_connections: true
+
+- name: Set pgsql_log_disconnections variable
+  when:
+    - pgsql_log_disconnections is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_disconnections: true
+
+- name: Set pgsql_log_error_verbosity variable
+  when:
+    - pgsql_log_error_verbosity is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_error_verbosity: VERBOSE
+
+- name: Set pgsql_log_hostname variable
+  when:
+    - pgsql_log_hostname is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_hostname: false
+
+- name: Set pgsql_log_line_prefix variable
+  when:
+    - pgsql_log_line_prefix is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_line_prefix: '%m [%p]: [%l-1] db=%d,user=%u,app=%a,client=%h '
+
+- name: Set pgsql_log_statement variable
+  when:
+    - pgsql_log_statement is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_statement: ddl
+
+- name: Set pgsql_timezone variable
+  when:
+    - pgsql_timezone is not defined
+  ansible.builtin.set_fact:
+    pgsql_timezone: 'America/New_York'
+
+- name: Set pgsql_log_timezone variable
+  when:
+    - pgsql_log_timezone is not defined
+  ansible.builtin.set_fact:
+    pgsql_log_timezone: "{{ pgsql_timezone }}"
+
+- name: Set pgsql_pgaudit_log variable
+  when:
+    - pgsql_pgaudit_log is not defined
+  ansible.builtin.set_fact:
+    pgsql_pgaudit_log:
+      - DDL
+      - WRITE
+
+- name: Set pgsql_additional_shared_preload_libraries variable
+  when:
+    - pgsql_additional_shared_preload_libraries is not defined
+  ansible.builtin.set_fact:
+    pgsql_additional_shared_preload_libraries: []
+
+- name: Set pgsql_logrotate_retention variable
+  when:
+    - pgsql_logrotate_retention is not defined
+  ansible.builtin.set_fact:
+    pgsql_logrotate_retention: 7
+
+- name: Set pgsql_additional_hba_entries variable
+  when:
+    - pgsql_additional_hba_entries is not defined
+  ansible.builtin.set_fact:
+    pgsql_additional_hba_entries: []
+
+- name: Set pgsql_databases variable
+  when:
+    - pgsql_databases is not defined
+  ansible.builtin.set_fact:
+    pgsql_databases: []
+
+- name: Set pgsql_users variable
+  when:
+    - pgsql_users is not defined
+  ansible.builtin.set_fact:
+    pgsql_users: []
+
+- name: Set pgsql_configure_vault_database_connection variable
+  when:
+    - pgsql_configure_vault_database_connection is not defined
+  ansible.builtin.set_fact:
+    pgsql_configure_vault_database_connection: "{{ not pgsql_listen_on_local_only }}"
+
+- name: Set pgsql_vault_database_mount_point variable
+  when:
+    - pgsql_vault_database_mount_point is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_database_mount_point: database
+
+- name: Set pgsql_vault_managed_monitoring_credentials variable
+  when:
+    - pgsql_vault_managed_monitoring_credentials is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_managed_monitoring_credentials: "{{ pgsql_configure_monitoring }}"
+
+- name: Set pgsql_vault_monitor_mount_point variable
+  when:
+    - pgsql_vault_monitor_mount_point is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_monitor_mount_point: secret
+
+- name: Set pgsql_vault_monitor_path variable
+  when:
+    - pgsql_vault_monitor_path is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_monitor_path: "pgsql/{{ inventory_hostname | lower }}"
+
+- name: Set pgsql_vault_ssl_mode variable
+  when:
+    - pgsql_vault_ssl_mode is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_ssl_mode: verify-full
+
+- name: Set pgsql_vault_user variable
+  when:
+    - pgsql_vault_user is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_user: vault
+
+- name: Set pgsql_vault_ip_addresses variable
+  when:
+    - pgsql_vault_ip_addresses is not defined
+  ansible.builtin.set_fact:
+    pgsql_vault_ip_addresses: []
+
+- name: Set pgsql_monitoring_ip_addresses variable
+  when:
+    - pgsql_monitoring_ip_addresses is not defined
+  ansible.builtin.set_fact:
+    pgsql_monitoring_ip_addresses: []
+
+- name: Set pgsql_monitoring_user variable
+  when:
+    - pgsql_monitoring_user is not defined
+  ansible.builtin.set_fact:
+    pgsql_monitoring_user: zbx_monitor
+
+- name: Set pgsql_password_rotation_period variable
+  when:
+    - pgsql_password_rotation_period is not defined
+  ansible.builtin.set_fact:
+    pgsql_password_rotation_period: 5184000
+
+- name: Set _pgsql_custom_listen_addresses variables
+  ansible.builtin.set_fact:
+    _pgsql_custom_listen_addresses: >-
+      {{ pgsql_listen_addresses | default([]) | join(',') }}
+
+- name: Set log destination variables
+  ansible.builtin.set_fact:
+    _pgsql_stderr_log_destination: >-
+      {{ ['stderr'] if pgsql_log_to_stderr else [] }}
+    _pgsql_csvlog_log_destination: >-
+      {{ ['csvlog'] if pgsql_log_to_csvlog else [] }}
+    _pgsql_syslog_log_destination: >-
+      {{ ['syslog'] if pgsql_log_to_syslog else [] }}
+
+- name: Set _pgsql_log_destination_list variable
+  ansible.builtin.set_fact:
+    _pgsql_log_destination_list: >-
+      {{ _pgsql_stderr_log_destination +
+          _pgsql_csvlog_log_destination +
+          _pgsql_syslog_log_destination }}
+
+- name: Set shared preload library variables
+  ansible.builtin.set_fact:
+    _pgsql_pgaudit_shared_preload_libraries: >-
+      {{ ['pgaudit'] if pgsql_install_pgaudit else [] }}
+    _pgsql_timescaledb_shared_preload_libraries: >-
+      {{ ['timescaledb'] if pgsql_install_timescaledb else [] }}
+
+- name: Set _pgsql_shared_preload_libraries_list variable
+  ansible.builtin.set_fact:
+    _pgsql_shared_preload_libraries_list: >-
+      {{ pgsql_additional_shared_preload_libraries +
+          _pgsql_pgaudit_shared_preload_libraries +
+          _pgsql_timescaledb_shared_preload_libraries }}
+
+- name: Set HBA entry variables
+  ansible.builtin.set_fact:
+    _pgsql_default_hba_entries:
+      - type: local
+        database: all
+        user: all
+        auth_method: peer
+      - type: host
+        database: all
+        user: all
+        address: '127.0.0.1/32'
+        auth_method: "{{ pgsql_password_encryption }}"
+      - type: host
+        database: all
+        user: all
+        address: '::1/128'
+        auth_method: "{{ pgsql_password_encryption }}"
+    _pgsql_vault_hba_entries: >-
+      [
+      {% for address in pgsql_vault_ip_addresses %}
+        {
+          "type": "host",
+          "database": "all",
+          "user": "{{ pgsql_vault_user }}",
+          "address": "{{ address }}/32",
+          "auth_method": "{{ pgsql_password_encryption }}"
+        }{{ ',' if not loop.last }}
+      {% endfor %}
+      ]
+    _pgsql_monitoring_hba_entries: >-
+      [
+      {% for address in pgsql_monitoring_ip_addresses %}
+        {
+          "type": "host",
+          "database": "all",
+          "user": "{{ pgsql_monitoring_user }}",
+          "address": "{{ address }}/32",
+          "auth_method": "{{ pgsql_password_encryption }}"
+        }{{ ',' if not loop.last }}
+      {% endfor %}
+      ]
+
+- name: Set variables
+  ansible.builtin.set_fact:
+    _pgsql_listen_addresses: >-
+      {% if pgsql_listen_on_local_only %}localhost{% elif pgsql_listen_on_all_addresses %}*{% else %}{{ _pgsql_custom_listen_addresses }}{% endif %}
+    _pgsql_log_destination: >-
+      {{ _pgsql_log_destination_list | join(',') }}
+    _pgsql_shared_preload_libraries: >-
+      {{ _pgsql_shared_preload_libraries_list | join(',') }}
+    _pgsql_pgaudit_log: "{{ pgsql_pgaudit_log | join(',') }}"
+    _pgsql_hba_entries: >-
+      {{ pgsql_additional_hba_entries +
+        _pgsql_default_hba_entries +
+        _pgsql_vault_hba_entries +
+        _pgsql_monitoring_hba_entries }}
+    _pgsql_firewall_type: >-
+      {{ pgsql_firewall_type | default(_pgsql_default_firewall_type) }}

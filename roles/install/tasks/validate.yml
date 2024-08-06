@@ -1,30 +1,60 @@
 ---
-- name: Validate EL major version
+- name: Gathering OS facts
   when:
-    - ansible_os_family == 'RedHat'
+    - ansible_distribution is not defined or
+      ansible_distribution_major_version is not defined or
+      ansible_distribution_release is not defined or
+      ansible_os_family is not defined
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!min'
+      - distribution
+      - distribution_major_version
+      - distribution_release
+      - os_family
+
+- name: Validate OS family
   ansible.builtin.assert:
     that:
-      - ansible_distribution_major_version in _pgsql_el_supported_versions
-    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
-    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported"
+      - ansible_os_family in _pgsql_supported_os_families
+    fail_msg: "Some {{ ansible_os_family }}-based OS are not supported."
+    success_msg: "Some {{ ansible_os_family }}-based are supported.  Checking specific OS."
+
+- name: Include OS family variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}/main.yml"
 
 - name: Validate non-EL distribution
   when:
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution in _pgsql_non_el_supported_distribution_releases.keys()
-    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported"
-    success_msg: "{{ ansible_distribution }} is supported. Checking version."
+      - ansible_distribution in _pgsql_supported_distributions
+    fail_msg: "{{ ansible_distribution }} is not supported."
+    success_msg: "{{ ansible_distribution }} may be supported. Checking version."
+
+- name: Include non-EL distribution variables
+  when:
+    - ansible_os_family != 'RedHat'
+  ansible.builtin.include_vars: "{{ ansible_os_family }}/{{ ansible_distribution }}.yml"
 
 - name: Validate non-EL distribution release
   when:
     - ansible_os_family != 'RedHat'
   ansible.builtin.assert:
     that:
-      - ansible_distribution_release in _pgsql_non_el_supported_distribution_releases[ansible_distribution]
-    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is not supported"
-    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is supported"
+      - ansible_distribution_release in _pgsql_supported_distribution_releases
+    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is not supported."
+    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_release }} is supported."
+
+- name: Validate EL major version
+  when:
+    - ansible_os_family == 'RedHat'
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution_major_version in _pgsql_supported_os_major_versions
+    fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported."
+    success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported."
 
 - name: Validate PostgreSQL major version
   ansible.builtin.assert:
@@ -71,7 +101,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_shared_buffers | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_shared_buffers | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_shared_buffers | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL shared buffers '{{ pgsql_shared_buffers }}'. Shared buffers must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL shared buffers '{{ pgsql_shared_buffers }}' is valid."
 
@@ -79,7 +109,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_work_mem | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_work_mem | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_work_mem | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL work memory '{{ pgsql_work_mem }}'. Work memory must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL work memory '{{ pgsql_work_mem }}' is valid."
 
@@ -87,7 +117,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_maintenance_work_mem | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_maintenance_work_mem | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_maintenance_work_mem | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL maintenance work memory '{{ pgsql_maintenance_work_mem }}'. Maintenance work memory must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL maintenance work memory '{{ pgsql_maintenance_work_mem }}' is valid."
 
@@ -133,7 +163,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_wal_buffers | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_wal_buffers | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_wal_buffers | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL WAL buffers '{{ pgsql_wal_buffers }}'. WAL buffers must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL WAL buffers '{{ pgsql_wal_buffers }}' is valid."
 
@@ -149,7 +179,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_min_wal_size | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_min_wal_size | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_min_wal_size | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL minimum WAL size '{{ pgsql_min_wal_size }}'. Minimum WAL size must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL minimum WAL size '{{ pgsql_min_wal_size }}' is valid."
 
@@ -157,7 +187,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_max_wal_size | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_max_wal_size | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_max_wal_size | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL maximum WAL size '{{ pgsql_max_wal_size }}'. Maximum WAL size must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL maximum WAL size '{{ pgsql_max_wal_size }}' is valid."
 
@@ -165,7 +195,7 @@
   ansible.builtin.assert:
     that:
       - pgsql_effective_cache_size | regex_search('^[0-9]+(kB|MB|GB)$')
-      - pgsql_effective_cache_size | regex_replace('kB|MB|GB', '') | int > 0
+      - pgsql_effective_cache_size | human_to_bytes('B') > 0
     fail_msg: "Invalid PostgreSQL effective cache size '{{ pgsql_effective_cache_size }}'. Effective cache size must be a number greater than 0 followed by kB, MB or GB."
     success_msg: "PostgreSQL effective cache size '{{ pgsql_effective_cache_size }}' is valid."
 
@@ -185,6 +215,6 @@
     that:
       - pgsql_log_rotation_size | string == '0' or
         (pgsql_log_rotation_size | regex_search('^[0-9]+(kB|MB|GB)$') and
-        pgsql_log_rotation_size | regex_replace('kB|MB|GB', '') | int > 0)
+        pgsql_log_rotation_size | human_to_bytes('B') > 0)
     fail_msg: "Invalid PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}'. Log rotation size must be a number greater than 0 followed by kB, MB or GB or 0."
     success_msg: "PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}' is valid."

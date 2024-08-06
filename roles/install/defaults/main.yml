@@ -1,4 +1,8 @@
 ---
+pgsql_configure_firewall: "{{ not pgsql_listen_on_local_only }}"
+pgsql_configure_monitoring: "{{ not pgsql_listen_on_local_only }}"
+pgsql_configure_logrotate: true
+
 pgsql_major_version: 16
 pgsql_install_pgaudit: true
 pgsql_install_timescaledb: false
@@ -69,11 +73,6 @@ pgsql_pgaudit_log:
   - DDL
   - WRITE
 pgsql_additional_shared_preload_libraries: []
-
-pgsql_configure_firewalld: "{{ _pgsql_default_configure_firewalld | default(false) }}"
-pgsql_configure_ufw: "{{ _pgsql_default_configure_ufw | default(false) }}"
-pgsql_configure_monitoring: "{{ not pgsql_listen_on_local_only }}"
-pgsql_configure_logrotate: true
 
 pgsql_logrotate_retention: 7
 

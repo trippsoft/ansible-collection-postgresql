@@ -6,6 +6,31 @@ argument_specs:
       - Installs and configures PostgreSQL
     author: Jim Tarpley
     options:
+      pgsql_configure_logrotate:
+        type: bool
+        required: false
+        default: true
+        description:
+          - Whether to configure log rotation for the PostgreSQL log files.
+      pgsql_configure_firewall:
+        type: bool
+        required: false
+        description:
+          - Whether to configure the host firewall for use with PostgreSQL server.
+          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.
+      pgsql_configure_monitoring:
+        type: bool
+        required: false
+        default: true
+        description:
+          - Whether to configure monitoring for PostgreSQL.
+          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.
+      pgsql_configure_vault_database_connection:
+        type: bool
+        required: false
+        default: true
+        description:
+          - Whether to configure a HashiCorp Vault database secret engine to manage PostgreSQL credentials.
       pgsql_major_version:
         type: int
         required: false
@@ -29,28 +54,6 @@ argument_specs:
         default: false
         description:
           - Whether to install the TimescaleDB extension.
-      pgsql_configure_logrotate:
-        type: bool
-        required: false
-        default: true
-        description:
-          - Whether to configure log rotation for the PostgreSQL log files.
-      pgsql_configure_firewalld:
-        type: bool
-        required: false
-        default: true
-        description:
-          - Whether to configure firewalld to allow access to the PostgreSQL port.
-          - If `pgsql_listen_on_local_only` is `true`, this defaults to `false`.
-          - Otherwise, this defaults to `true` on non-Ubuntu systems.
-      pgsql_configure_ufw:
-        type: bool
-        required: false
-        default: true
-        description:
-          - Whether to configure UFW to allow access to the PostgreSQL port.
-          - If `pgsql_listen_on_local_only` is `true`, this defaults to `false`.
-          - Otherwise, this defaults to `true` on Ubuntu systems.
       pgsql_timezone:
         type: str
         required: false
@@ -58,19 +61,13 @@ argument_specs:
         description:
           - The timezone to use for the PostgreSQL server.
           - See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid timezones.
-      pgsql_configure_vault_database_connection:
-        type: bool
-        required: false
-        default: true
-        description:
-          - Whether to configure a HashiCorp Vault database secret engine to manage PostgreSQL credentials.
       pgsql_vault_managed_monitoring_credentials:
         type: bool
         required: false
         default: false
         description:
           - Whether to manage monitoring credentials in HashiCorp Vault.
-          - If `pgsql_configure_monitoring` is `false`, this option is ignored.
+          - If *pgsql_configure_monitoring* is `false`, this option is ignored.
       pgsql_create_vault_secret_engines:
         type: bool
         required: false
@@ -83,20 +80,20 @@ argument_specs:
         default: database
         description:
           - The mount point for the HashiCorp Vault database secret engine.
-          - This is only used if `pgsql_configure_vault_database_connection` is `true`.
+          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
       pgsql_vault_user:
         type: str
         required: false
         default: vault
         description:
           - The username for the PostgreSQL user in HashiCorp Vault.
-          - This is only used if `pgsql_configure_vault_database_connection` is `true`.
+          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
       pgsql_vault_access_hostname:
         type: str
         required: false
         description:
           - The FQDN or IP address for Vault to use when connecting to the PostgreSQL server.
-          - This is only used if `pgsql_configure_vault_database_connection` is `true`.
+          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
       pgsql_vault_ssl_mode:
         type: str
         required: false
@@ -109,63 +106,56 @@ argument_specs:
         description:
           - The SSL mode to use when connecting to the PostgreSQL database.
           - See https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION for more information.
-          - This is only used if `pgsql_configure_vault_database_connection` is `true`.
-      pgsql_configure_monitoring:
-        type: bool
-        required: false
-        default: true
-        description:
-          - Whether to configure monitoring for PostgreSQL.
-          - If `pgsql_listen_on_local_only` is `true`, this defaults to `false`.
+          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
       pgsql_vault_monitor_mount_point:
         type: str
         required: false
         default: secret
         description:
           - The KV version 2 mount point for the HashiCorp Vault monitoring secret.
-          - This is only used if `pgsql_configure_monitoring` and `pgsql_vault_managed_monitoring_credentials` are `true`.
+          - This is only used if *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`.
       pgsql_vault_monitor_path:
         type: str
         required: false
         default: "pgsql/{{ inventory_hostname }}"
         description:
           - The path to the monitoring credentials in HashiCorp Vault.
-          - This is only used if `pgsql_configure_monitoring` and `pgsql_vault_managed_monitoring_credentials` are `true`.
+          - This is only used if *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`.
       pgsql_monitoring_user:
         type: str
         required: false
         default: zbx_monitor
         description:
           - The username for the monitoring user.
-          - This is only used if `pgsql_configure_monitoring` is `true`.
+          - This is only used if *pgsql_configure_monitoring* is `true`.
       pgsql_monitoring_password:
         type: str
         required: false
         description:
           - The password for the monitoring user.
-          - This is only used if `pgsql_configure_monitoring` is `true` and `pgsql_vault_managed_monitoring_credentials` is `false`.
+          - This is only used if *pgsql_configure_monitoring* is `true` and *pgsql_vault_managed_monitoring_credentials* is `false`.
       pgsql_listen_on_local_only:
         type: bool
         required: false
         default: false
         description:
           - Whether the PostgreSQL server should only listen on the loopback address.
-          - If this is `false`, `pgsql_configure_firewalld` and `pgsql_configure_monitoring` default to `true`.
-          - This is mutually exclusive with `pgsql_listen_on_all_addresses`.
+          - If this is `false`, *pgsql_configure_firewalld* and *pgsql_configure_monitoring* default to `true`.
+          - This is mutually exclusive with *pgsql_listen_on_all_addresses*.
       pgsql_listen_on_all_addresses:
         type: bool
         required: false
         default: true
         description:
           - Whether the PostgreSQL server should listen on all available network interfaces.
-          - This is mutually exclusive with `pgsql_listen_on_local_only`.
+          - This is mutually exclusive with *pgsql_listen_on_local_only*.
       pgsql_listen_addresses:
         type: list
         required: false
         elements: str
         description:
           - A list of IP addresses on which the PostgreSQL server should listen.
-          - This is required if `pgsql_listen_on_all_addresses` and `pgsql_listen_on_local_only` are `false`. Otherwise, it is ignored.
+          - This is required if *pgsql_listen_on_all_addresses* and *pgsql_listen_on_local_only* are `false`. Otherwise, it is ignored.
       pgsql_port:
         type: int
         required: false
@@ -192,7 +182,7 @@ argument_specs:
         required: false
         description:
           - The path to the SSL certificate authority file.
-          - This is only used if `pgsql_ssl` is `true`.
+          - This is only used if *pgsql_ssl* is `true`.
           - Relative paths are relative to the PostgreSQL data directory.
       pgsql_ssl_cert_file:
         type: str
@@ -200,7 +190,7 @@ argument_specs:
         default: server.crt
         description:
           - The path to the SSL certificate file.
-          - This is only used if `pgsql_ssl` is `true`.
+          - This is only used if *pgsql_ssl* is `true`.
           - Relative paths are relative to the PostgreSQL data directory.
       pgsql_ssl_key_file:
         type: str
@@ -208,7 +198,7 @@ argument_specs:
         default: server.key
         description:
           - The path to the SSL key file.
-          - This is only used if `pgsql_ssl` is `true`.
+          - This is only used if *pgsql_ssl* is `true`.
           - Relative paths are relative to the PostgreSQL data directory.
       pgsql_max_connections:
         type: int
@@ -324,28 +314,28 @@ argument_specs:
         default: true
         description:
           - Whether logs from stderr and CSV files should be written to file.
-          - If `pgsql_log_to_stderr` and `pgsql_log_to_csvlog` are `false`, this is ignored.
+          - If *pgsql_log_to_stderr* and *pgsql_log_to_csvlog* are `false`, this is ignored.
       pgsql_log_directory:
         type: path
         required: false
         default: /var/log/postgres
         description:
           - The directory in which log files should be stored.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_log_filename:
         type: str
         required: false
         default: postgresql.log
         description:
           - The name of the log file.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_log_file_mode:
         type: str
         required: false
         default: '0600'
         description:
           - The file mode for the log file.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_log_rotation_age:
         type: str
         required: false
@@ -353,7 +343,7 @@ argument_specs:
         description:
           - The maximum age of a log file before it is rotated by PostgreSQL.
           - If log rotation is managed by logrotate, this should be set to `0`.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_log_rotation_size:
         type: str
         required: false
@@ -361,42 +351,42 @@ argument_specs:
         description:
           - The maximum size of a log file before it is rotated by PostgreSQL.
           - If log rotation is managed by logrotate, this should be set to `0`.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_log_truncate_on_rotation:
         type: bool
         required: false
         default: true
         description:
           - Whether to truncate the log file on rotation.
-          - This is only used if `pgsql_logging_collector` is `true`.
+          - This is only used if *pgsql_logging_collector* is `true`.
       pgsql_syslog_facility:
         type: str
         required: false
         default: LOCAL0
         description:
           - The syslog facility to use for logging.
-          - This is only used if `pgsql_log_to_syslog` is `true`.
+          - This is only used if *pgsql_log_to_syslog* is `true`.
       pgsql_syslog_ident:
         type: str
         required: false
         default: postgres
         description:
           - The syslog identifier to use for logging.
-          - This is only used if `pgsql_log_to_syslog` is `true`.
+          - This is only used if *pgsql_log_to_syslog* is `true`.
       pgsql_syslog_sequence_numbers:
         type: bool
         required: false
         default: true
         description:
           - Whether to add sequence numbers to syslog messages to prevent summarizing.
-          - This is only used if `pgsql_log_to_syslog` is `true`.
+          - This is only used if *pgsql_log_to_syslog* is `true`.
       pgsql_syslog_split_messages:
         type: bool
         required: false
         default: true
         description:
           - Whether to split syslog messages into multiple lines.
-          - This is only used if `pgsql_log_to_syslog` is `true`.
+          - This is only used if *pgsql_log_to_syslog* is `true`.
       pgsql_log_min_messages:
         type: str
         required: false
@@ -528,7 +518,7 @@ argument_specs:
         elements: str
         description:
           - A list of additional shared libraries to preload.
-          - This is not including PGAudit or TimescaleDB, if `pgsql_install_pgaudit` or `pgsql_install_timescaledb` are `true` respectively.
+          - This is not including PGAudit or TimescaleDB, if *pgsql_install_pgaudit* or *pgsql_install_timescaledb* are `true` respectively.
       pgsql_vault_ip_addresses:
         type: list
         required: false
@@ -536,7 +526,7 @@ argument_specs:
         elements: str
         description:
           - A list of IP addresses from which HashiCorp Vault will access the PostgreSQL server.
-          - This is only used if `pgsql_configure_vault_database_connection` is `true`.
+          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
           - This should not include the loopback address.
       pgsql_monitoring_ip_addresses:
         type: list
@@ -545,7 +535,7 @@ argument_specs:
         elements: str
         description:
           - A list of IP addresses from which monitoring services will access the PostgreSQL server.
-          - This is only used if `pgsql_configure_monitoring` is `true`.
+          - This is only used if *pgsql_configure_monitoring* is `true`.
           - This should not include the loopback address.
       pgsql_additional_hba_entries:
         type: list
@@ -613,6 +603,16 @@ argument_specs:
               - Any additional options needed for the authentication method.
               - For most common authentication methods, this should not be provided.
               - See https://www.postgresql.org/docs/current/auth-pg-hba-conf.html#AUTH-PG-HBA-CONF for more information.
+      pgsql_firewall_type:
+        type: str
+        required: false
+        choices:
+          - firewalld
+          - ufw
+        description:
+          - The type of host firewall to configure.
+          - For Debian and EL systems, this defaults to `firewalld`.
+          - For Ubuntu systems, this defaults to `ufw`.
       pgsql_databases:
         type: list
         required: false

@@ -1,0 +1,7 @@
+---
+_pgsql_supported_distribution_releases:
+  - focal
+  - jammy
+  - noble
+
+_pgsql_default_firewall_type: ufw

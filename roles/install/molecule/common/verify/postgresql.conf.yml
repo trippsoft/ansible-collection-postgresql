@@ -1,0 +1,1037 @@
+---
+- name: Check if data_directory is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "data_directory = '{{ _pgsql_data_directory }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _data_directory_set
+
+- name: Verify data_directory is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _data_directory_set.changed
+    fail_msg: data_directory not set in postgresql.conf.
+    success_msg: data_directory set in postgresql.conf.
+
+- name: Check if hba_file is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "hba_file = '{{ _pgsql_conf_directory }}/pg_hba.conf'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _hba_file_set
+
+- name: Verify hba_file is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _hba_file_set.changed
+    fail_msg: hba_file not set in postgresql.conf.
+    success_msg: hba_file set in postgresql.conf.
+
+- name: Check if ident_file is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "ident_file = '{{ _pgsql_conf_directory }}/pg_ident.conf'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _ident_file_set
+
+- name: Verify ident_file is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _ident_file_set.changed
+    fail_msg: ident_file not set in postgresql.conf.
+    success_msg: ident_file set in postgresql.conf.
+
+- name: Check if listen_addresses is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "listen_addresses = '{{ _pgsql_listen_addresses }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _listen_addresses_set
+
+- name: Verify listen_addresses is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _listen_addresses_set.changed
+    fail_msg: listen_addresses not set in postgresql.conf.
+    success_msg: listen_addresses set in postgresql.conf.
+
+- name: Check if port is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "port = {{ pgsql_port }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _port_set
+
+- name: Verify port is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _port_set.changed
+    fail_msg: port not set in postgresql.conf.
+    success_msg: port set in postgresql.conf.
+
+- name: Check if max_connections is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_connections = {{ pgsql_max_connections }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_connections_set
+
+- name: Verify max_connections is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_connections_set.changed
+    fail_msg: max_connections not set in postgresql.conf.
+    success_msg: max_connections set in postgresql.conf.
+
+- name: Check if password_encryption is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "password_encryption = {{ pgsql_password_encryption }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _password_encryption_set
+
+- name: Verify password_encryption is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _password_encryption_set.changed
+    fail_msg: password_encryption not set in postgresql.conf.
+    success_msg: password_encryption set in postgresql.conf.
+
+- name: Check if ssl is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "ssl = {{ pgsql_ssl | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _ssl_set
+
+- name: Verify ssl is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _ssl_set.changed
+    fail_msg: ssl not set in postgresql.conf.
+    success_msg: ssl set in postgresql.conf.
+
+- name: Verify SSL configuration
+  when:
+    - pgsql_ssl
+  block:
+    - name: Verify ssl_ca_file
+      when:
+        - pgsql_ssl_ca_file is defined
+      block:
+        - name: Check if ssl_ca_file is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "ssl_ca_file = '{{ pgsql_ssl_ca_file }}'"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _ssl_ca_file_set
+
+        - name: Verify ssl_ca_file is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _ssl_ca_file_set.changed
+            fail_msg: ssl_ca_file not set in postgresql.conf.
+            success_msg: ssl_ca_file set in postgresql.conf.
+
+    - name: Check if ssl_cert_file is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "ssl_cert_file = '{{ pgsql_ssl_cert_file }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _ssl_cert_file_set
+
+    - name: Verify ssl_cert_file is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _ssl_cert_file_set.changed
+        fail_msg: ssl_cert_file not set in postgresql.conf.
+        success_msg: ssl_cert_file set in postgresql.conf.
+
+    - name: Check if ssl_key_file is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "ssl_key_file = '{{ pgsql_ssl_key_file }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _ssl_key_file_set
+
+    - name: Verify ssl_key_file is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _ssl_key_file_set.changed
+        fail_msg: ssl_key_file not set in postgresql.conf.
+        success_msg: ssl_key_file set in postgresql.conf.
+
+    - name: Check if ssl_min_protocol_version is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "ssl_min_protocol_version = '{{ pgsql_ssl_min_protocol_version }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _ssl_min_protocol_version_set
+
+    - name: Verify ssl_min_protocol_version is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _ssl_min_protocol_version_set.changed
+        fail_msg: ssl_min_protocol_version not set in postgresql.conf.
+        success_msg: ssl_min_protocol_version set in postgresql.conf.
+
+- name: Check if shared_buffers is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "shared_buffers = {{ pgsql_shared_buffers }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _shared_buffers_set
+
+- name: Verify shared_buffers is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _shared_buffers_set.changed
+    fail_msg: shared_buffers not set in postgresql.conf.
+    success_msg: shared_buffers set in postgresql.conf.
+
+- name: Check if work_mem is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "work_mem = {{ pgsql_work_mem }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _work_mem_set
+
+- name: Verify work_mem is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _work_mem_set.changed
+    fail_msg: work_mem not set in postgresql.conf.
+    success_msg: work_mem set in postgresql.conf.
+
+- name: Check if maintenance_work_mem is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "maintenance_work_mem = {{ pgsql_maintenance_work_mem }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _maintenance_work_mem_set
+
+- name: Verify maintenance_work_mem is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _maintenance_work_mem_set.changed
+    fail_msg: maintenance_work_mem not set in postgresql.conf.
+    success_msg: maintenance_work_mem set in postgresql.conf.
+
+- name: Check if effective_io_concurrency is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "effective_io_concurrency = {{ pgsql_effective_io_concurrency }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _effective_io_concurrency_set
+
+- name: Verify effective_io_concurrency is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _effective_io_concurrency_set.changed
+    fail_msg: effective_io_concurrency not set in postgresql.conf.
+    success_msg: effective_io_concurrency set in postgresql.conf.
+
+- name: Check if max_worker_processes is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_worker_processes = {{ pgsql_max_worker_processes }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_worker_processes_set
+
+- name: Verify max_worker_processes is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_worker_processes_set.changed
+    fail_msg: max_worker_processes not set in postgresql.conf.
+    success_msg: max_worker_processes set in postgresql.conf.
+
+- name: Check if max_parallel_workers_per_gather is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_parallel_workers_per_gather = {{ pgsql_max_parallel_workers_per_gather }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_parallel_workers_per_gather_set
+
+- name: Verify max_parallel_workers_per_gather is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_parallel_workers_per_gather_set.changed
+    fail_msg: max_parallel_workers_per_gather not set in postgresql.conf.
+    success_msg: max_parallel_workers_per_gather set in postgresql.conf.
+
+- name: Check if max_parallel_maintenance_workers is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_parallel_maintenance_workers = {{ pgsql_max_parallel_maintenance_workers }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_parallel_maintenance_workers_set
+
+- name: Verify max_parallel_maintenance_workers is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_parallel_maintenance_workers_set.changed
+    fail_msg: max_parallel_maintenance_workers not set in postgresql.conf.
+    success_msg: max_parallel_maintenance_workers set in postgresql.conf.
+
+- name: Check if max_parallel_workers is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_parallel_workers = {{ pgsql_max_parallel_workers }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_parallel_workers_set
+
+- name: Verify max_parallel_workers is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_parallel_workers_set.changed
+    fail_msg: max_parallel_workers not set in postgresql.conf.
+    success_msg: max_parallel_workers set in postgresql.conf.
+
+- name: Verify wal_buffers
+  when:
+    - pgsql_wal_buffers is defined
+  block:
+    - name: Check if wal_buffers is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "wal_buffers = {{ pgsql_wal_buffers }}"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _wal_buffers_set
+
+    - name: Verify wal_buffers is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _wal_buffers_set.changed
+        fail_msg: wal_buffers not set in postgresql.conf.
+        success_msg: wal_buffers set in postgresql.conf.
+
+- name: Check if checkpoint_completion_target is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "checkpoint_completion_target = {{ pgsql_checkpoint_completion_target }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _checkpoint_completion_target_set
+
+- name: Verify checkpoint_completion_target is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _checkpoint_completion_target_set.changed
+    fail_msg: checkpoint_completion_target not set in postgresql.conf.
+    success_msg: checkpoint_completion_target set in postgresql.conf.
+
+- name: Check if max_wal_size is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_wal_size = {{ pgsql_max_wal_size }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_wal_size_set
+
+- name: Verify max_wal_size is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_wal_size_set.changed
+    fail_msg: max_wal_size not set in postgresql.conf.
+    success_msg: max_wal_size set in postgresql.conf.
+
+- name: Check if min_wal_size is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "min_wal_size = {{ pgsql_min_wal_size }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _min_wal_size_set
+
+- name: Verify min_wal_size is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _min_wal_size_set.changed
+    fail_msg: min_wal_size not set in postgresql.conf.
+    success_msg: min_wal_size set in postgresql.conf.
+
+- name: Check if max_logical_replication_workers is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "max_logical_replication_workers = {{ pgsql_max_worker_processes }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _max_logical_replication_workers_set
+
+- name: Verify max_logical_replication_workers is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _max_logical_replication_workers_set.changed
+    fail_msg: max_logical_replication_workers not set in postgresql.conf.
+    success_msg: max_logical_replication_workers set in postgresql.conf.
+
+- name: Check if random_page_cost is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "random_page_cost = {{ pgsql_random_page_cost }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _random_page_cost_set
+
+- name: Verify random_page_cost is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _random_page_cost_set.changed
+    fail_msg: random_page_cost not set in postgresql.conf.
+    success_msg: random_page_cost set in postgresql.conf.
+
+- name: Check if effective_cache_size is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "effective_cache_size = {{ pgsql_effective_cache_size }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _effective_cache_size_set
+
+- name: Verify effective_cache_size is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _effective_cache_size_set.changed
+    fail_msg: effective_cache_size not set in postgresql.conf.
+    success_msg: effective_cache_size set in postgresql.conf.
+
+- name: Check if log_destination is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_destination = '{{ _pgsql_log_destination }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_destination_set
+
+- name: Verify log_destination is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_destination_set.changed
+    fail_msg: log_destination not set in postgresql.conf.
+    success_msg: log_destination set in postgresql.conf.
+
+- name: Verify logging_collector
+  when:
+    - pgsql_log_to_stderr or
+      pgsql_log_to_csvlog
+  block:
+    - name: Check if logging_collector is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "logging_collector = {{ pgsql_logging_collector | ternary('on', 'off') }}"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _logging_collector_set
+
+    - name: Verify logging_collector is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _logging_collector_set.changed
+        fail_msg: logging_collector not set in postgresql.conf.
+        success_msg: logging_collector set in postgresql.conf.
+
+    - name: Verify logging configuration
+      when:
+        - pgsql_logging_collector
+      block:
+        - name: Check if log_directory is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_directory = '{{ pgsql_log_directory }}'"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_directory_set
+
+        - name: Verify log_directory is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_directory_set.changed
+            fail_msg: log_directory not set in postgresql.conf.
+            success_msg: log_directory set in postgresql.conf.
+        
+        - name: Check if log_filename is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_filename = '{{ pgsql_log_filename }}'"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_filename_set
+
+        - name: Verify log_filename is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_filename_set.changed
+            fail_msg: log_filename not set in postgresql.conf.
+            success_msg: log_filename set in postgresql.conf.
+        
+        - name: Check if log_file_mode is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_file_mode = {{ pgsql_log_file_mode }}"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_file_mode_set
+        
+        - name: Verify log_file_mode is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_file_mode_set.changed
+            fail_msg: log_file_mode not set in postgresql.conf.
+            success_msg: log_file_mode set in postgresql.conf.
+
+        - name: Check if log_rotation_age is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_rotation_age = {{ pgsql_log_rotation_age }}"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_rotation_age_set
+
+        - name: Verify log_rotation_age is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_rotation_age_set.changed
+            fail_msg: log_rotation_age not set in postgresql.conf.
+            success_msg: log_rotation_age set in postgresql.conf.
+        
+        - name: Check if log_rotation_size is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_rotation_size = {{ pgsql_log_rotation_size }}"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_rotation_size_set
+
+        - name: Verify log_rotation_size is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_rotation_size_set.changed
+            fail_msg: log_rotation_size not set in postgresql.conf.
+            success_msg: log_rotation_size set in postgresql.conf.
+
+        - name: Check if log_truncate_on_rotation is set in postgresql.conf
+          become: true
+          check_mode: true
+          ansible.builtin.lineinfile:
+            line: "log_truncate_on_rotation = {{ pgsql_log_truncate_on_rotation | ternary('on', 'off') }}"
+            path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+            owner: postgres
+            group: postgres
+            mode: '0600'
+          register: _log_truncate_on_rotation_set
+
+        - name: Verify log_truncate_on_rotation is set in postgresql.conf
+          ansible.builtin.assert:
+            that:
+              - not _log_truncate_on_rotation_set.changed
+            fail_msg: log_truncate_on_rotation not set in postgresql.conf.
+            success_msg: log_truncate_on_rotation set in postgresql.conf.
+
+- name: Verify syslog configuration
+  when:
+    - pgsql_log_to_syslog
+  block:
+    - name: Check if syslog_facility is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "syslog_facility = '{{ pgsql_syslog_facility }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _syslog_facility_set
+
+    - name: Verify syslog_facility is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _syslog_facility_set.changed
+        fail_msg: syslog_facility not set in postgresql.conf.
+        success_msg: syslog_facility set in postgresql.conf.
+
+    - name: Check if syslog_ident is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "syslog_ident = '{{ pgsql_syslog_ident }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _syslog_ident_set
+
+    - name: Verify syslog_ident is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _syslog_ident_set.changed
+        fail_msg: syslog_ident not set in postgresql.conf.
+        success_msg: syslog_ident set in postgresql.conf.
+
+    - name: Check if syslog_sequence_numbers is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "syslog_sequence_numbers = {{ pgsql_syslog_sequence_numbers | ternary('on', 'off') }}"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _syslog_sequence_numbers_set
+
+    - name: Verify syslog_sequence_numbers is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _syslog_sequence_numbers_set.changed
+        fail_msg: syslog_sequence_numbers not set in postgresql.conf.
+        success_msg: syslog_sequence_numbers set in postgresql.conf.
+
+    - name: Check if syslog_split_messages is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "syslog_split_messages = {{ pgsql_syslog_split_messages | ternary('on', 'off') }}"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _syslog_split_messages_set
+
+    - name: Verify syslog_split_messages is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _syslog_split_messages_set.changed
+        fail_msg: syslog_split_messages not set in postgresql.conf.
+        success_msg: syslog_split_messages set in postgresql.conf.
+
+- name: Check if log_min_messages is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_min_messages = {{ pgsql_log_min_messages | upper }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_min_messages_set
+
+- name: Verify log_min_messages is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_min_messages_set.changed
+    fail_msg: log_min_messages not set in postgresql.conf.
+    success_msg: log_min_messages set in postgresql.conf.
+
+- name: Check if log_min_error_statement is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_min_error_statement = {{ pgsql_log_min_error_statement | upper }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_min_error_statement_set
+
+- name: Verify log_min_error_statement is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_min_error_statement_set.changed
+    fail_msg: log_min_error_statement not set in postgresql.conf.
+    success_msg: log_min_error_statement set in postgresql.conf.
+
+- name: Check if debug_print_parse is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "debug_print_parse = {{ pgsql_debug_print_parse | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _debug_print_parse_set
+
+- name: Verify debug_print_parse is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _debug_print_parse_set.changed
+    fail_msg: debug_print_parse not set in postgresql.conf.
+    success_msg: debug_print_parse set in postgresql.conf.
+  
+- name: Check if debug_print_rewritten is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "debug_print_rewritten = {{ pgsql_debug_print_rewritten | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _debug_print_rewritten_set
+
+- name: Verify debug_print_rewritten is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _debug_print_rewritten_set.changed
+    fail_msg: debug_print_rewritten not set in postgresql.conf.
+    success_msg: debug_print_rewritten set in postgresql.conf.
+
+- name: Check if debug_print_plan is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "debug_print_plan = {{ pgsql_debug_print_plan | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _debug_print_plan_set
+
+- name: Verify debug_print_plan is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _debug_print_plan_set.changed
+    fail_msg: debug_print_plan not set in postgresql.conf.
+    success_msg: debug_print_plan set in postgresql.conf.
+
+- name: Check if debug_pretty_print is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "debug_pretty_print = {{ pgsql_debug_pretty_print | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _debug_pretty_print_set
+
+- name: Verify debug_pretty_print is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _debug_pretty_print_set.changed
+    fail_msg: debug_pretty_print not set in postgresql.conf.
+    success_msg: debug_pretty_print set in postgresql.conf.
+
+- name: Check if log_connections is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_connections = {{ pgsql_log_connections | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_connections_set
+
+- name: Verify log_connections is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_connections_set.changed
+    fail_msg: log_connections not set in postgresql.conf.
+    success_msg: log_connections set in postgresql.conf.
+
+- name: Check if log_disconnections is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_disconnections = {{ pgsql_log_disconnections | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_disconnections_set
+
+- name: Verify log_disconnections is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_disconnections_set.changed
+    fail_msg: log_disconnections not set in postgresql.conf.
+    success_msg: log_disconnections set in postgresql.conf.
+
+- name: Check if log_error_verbosity is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_error_verbosity = {{ pgsql_log_error_verbosity }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_error_verbosity_set
+
+- name: Verify log_error_verbosity is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_error_verbosity_set.changed
+    fail_msg: log_error_verbosity not set in postgresql.conf.
+    success_msg: log_error_verbosity set in postgresql.conf.
+
+- name: Check if log_hostname is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_hostname = {{ pgsql_log_hostname | ternary('on', 'off') }}"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_hostname_set
+
+- name: Verify log_hostname is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_hostname_set.changed
+    fail_msg: log_hostname not set in postgresql.conf.
+    success_msg: log_hostname set in postgresql.conf.
+
+- name: Check if log_line_prefix is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_line_prefix = '{{ pgsql_log_line_prefix }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_line_prefix_set
+
+- name: Verify log_line_prefix is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_line_prefix_set.changed
+    fail_msg: log_line_prefix not set in postgresql.conf.
+    success_msg: log_line_prefix set in postgresql.conf.
+
+- name: Check if log_line_prefix is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_line_prefix = '{{ pgsql_log_line_prefix }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_line_prefix_set
+
+- name: Verify log_line_prefix is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_line_prefix_set.changed
+    fail_msg: log_line_prefix not set in postgresql.conf.
+    success_msg: log_line_prefix set in postgresql.conf.
+
+- name: Check if log_statement is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_statement = '{{ pgsql_log_statement }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_statement_set
+
+- name: Verify log_statement is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_statement_set.changed
+    fail_msg: log_statement not set in postgresql.conf.
+    success_msg: log_statement set in postgresql.conf.
+
+- name: Check if log_timezone is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "log_timezone = '{{ pgsql_log_timezone }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _log_timezone_set
+
+- name: Verify log_timezone is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _log_timezone_set.changed
+    fail_msg: log_timezone not set in postgresql.conf.
+    success_msg: log_timezone set in postgresql.conf.
+
+- name: Check if timezone is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "timezone = '{{ pgsql_timezone }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _timezone_set
+
+- name: Verify timezone is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _timezone_set.changed
+    fail_msg: timezone not set in postgresql.conf.
+    success_msg: timezone set in postgresql.conf.
+
+- name: Check if shared_preload_libraries is set in postgresql.conf
+  become: true
+  check_mode: true
+  ansible.builtin.lineinfile:
+    line: "shared_preload_libraries = '{{ _pgsql_shared_preload_libraries }}'"
+    path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  register: _shared_preload_libraries_set
+
+- name: Verify shared_preload_libraries is set in postgresql.conf
+  ansible.builtin.assert:
+    that:
+      - not _shared_preload_libraries_set.changed
+    fail_msg: shared_preload_libraries not set in postgresql.conf.
+    success_msg: shared_preload_libraries set in postgresql.conf.
+
+- name: Verify pgaudit.log
+  when:
+    - pgsql_install_pgaudit
+  block:
+    - name: Check if pgaudit.log is set in postgresql.conf
+      become: true
+      check_mode: true
+      ansible.builtin.lineinfile:
+        line: "pgaudit.log = '{{ _pgsql_pgaudit_log }}'"
+        path: "{{ _pgsql_conf_directory }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      register: _pgaudit_log_set
+    
+    - name: Verify pgaudit.log is set in postgresql.conf
+      ansible.builtin.assert:
+        that:
+          - not _pgaudit_log_set.changed
+        fail_msg: pgaudit.log not set in postgresql.conf.
+        success_msg: pgaudit.log set in postgresql.conf.

@@ -43,5 +43,7 @@ provisioner:
                   - ALL
                 state: present
         pgsql_vault_access_hostname: "{{ ansible_fqdn }}"
+  playbooks:
+    verify: ../common/verify/main.yml
 verifier:
   name: ansible
