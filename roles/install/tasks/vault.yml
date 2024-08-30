@@ -77,7 +77,7 @@
                 path: "{{ pgsql_vault_monitor_path }}"
               register: _vault_monitor_secret
 
-            - name: Set variable to Vaupgsql_vault_monitor_pathlt secret, if present
+            - name: Set variable to Vault secret, if present
               ansible.builtin.set_fact:
                 pgsql_monitoring_password: "{{ _vault_monitor_secret.data.data.password }}"
           rescue:
