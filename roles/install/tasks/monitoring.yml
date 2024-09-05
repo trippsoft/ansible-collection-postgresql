@@ -1,0 +1,33 @@
+---
+- name: Configure HashiCorp Vault monitoring credentials
+  when:
+    - pgsql_vault_managed_monitoring_credentials
+  ansible.builtin.include_tasks: vault/monitoring.yml
+
+- name: Create monitoring user
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  community.postgresql.postgresql_user:
+    name: "{{ pgsql_monitoring_user }}"
+    password: "{{ pgsql_monitoring_password }}"
+    state: present
+
+- name: Provide monitoring user with access to monitoring functions
+  loop:
+    - pg_ls_dir(text)
+    - pg_stat_file(text)
+    - pg_ls_waldir()
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  community.postgresql.postgresql_privs:
+    database: postgres
+    type: function
+    objs: "{{ item }}"
+    roles: "{{ pgsql_monitoring_user }}"
+    privs: EXECUTE
+    schema: pg_catalog
+    state: present

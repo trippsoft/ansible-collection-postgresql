@@ -78,9 +78,6 @@ pgsql_logrotate_retention: 7
 
 pgsql_additional_hba_entries: []
 
-pgsql_databases: []
-pgsql_users: []
-
 pgsql_configure_vault_database_connection: "{{ not pgsql_listen_on_local_only }}"
 pgsql_vault_database_mount_point: database
 pgsql_vault_managed_monitoring_credentials: "{{ pgsql_configure_monitoring }}"

@@ -1,0 +1,45 @@
+---
+- name: Create Vault database mount point
+  when:
+    - pgsql_create_vault_secret_engines
+  delegate_to: localhost
+  trippsc2.hashi_vault.vault_database_secret_engine:
+    token: "{{ vault_token | default(omit) }}"
+    url: "{{ vault_url | default(omit) }}"
+    engine_mount_point: "{{ pgsql_vault_database_mount_point }}"
+    state: present
+
+- name: Configure Vault database connection
+  block:
+    - name: Check for Vault database connection
+      delegate_to: localhost
+      community.hashi_vault.vault_database_connection_read:
+        token: "{{ vault_token | default(omit) }}"
+        url: "{{ vault_url | default(omit) }}"
+        engine_mount_point: "{{ pgsql_vault_database_mount_point }}"
+        connection_name: "{{ inventory_hostname | lower }}"
+  rescue:
+    - name: Create Hashicorp Vault user
+      become: true
+      become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
+      community.postgresql.postgresql_user:
+        name: "{{ pgsql_vault_user }}"
+        password: T3mp0r@ry1234!
+        role_attr_flags: SUPERUSER
+        state: present
+
+    - name: Configure Vault database connection
+      delegate_to: localhost
+      community.hashi_vault.vault_database_connection_configure:
+        token: "{{ vault_token | default(omit) }}"
+        url: "{{ vault_url | default(omit) }}"
+        engine_mount_point: "{{ pgsql_vault_database_mount_point }}"
+        connection_name: "{{ inventory_hostname | lower }}"
+        plugin_name: postgresql-database-plugin
+        connection_url: "postgresql://{{ '{{username}}' }}:{{ '{{password}}' }}@{{ pgsql_vault_access_hostname }}:5432/postgres?sslmode={{ pgsql_vault_ssl_mode }}"
+        allowed_roles:
+          - '*'
+        connection_username: "{{ pgsql_vault_user }}"
+        connection_password: T3mp0r@ry1234!

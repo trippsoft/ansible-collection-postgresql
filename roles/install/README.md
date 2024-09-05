@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.0.7
+Version: 1.1.0
 
 This role installs and does initial configuration for PostgreSQL on Linux machines.
 
@@ -26,6 +26,8 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 ## Role Arguments
 |Option|Description|Type|Required|Choices|Default|
 |---|---|---|---|---|---|
+| vault_url | <p>The URL for accessing HashiCorp Vault.</p><p>Alternatively, this can be configured through ansible.cfg or environment variables.</p> | str | no |  |  |
+| vault_token | <p>The token for accessing HashiCorp Vault.</p><p>Alternatively, this (or any other authentication method) can be configured through ansible.cfg or environment variables.</p> | str | no |  |  |
 | pgsql_configure_logrotate | <p>Whether to configure log rotation for the PostgreSQL log files.</p> | bool | no |  | true |
 | pgsql_configure_firewall | <p>Whether to configure the host firewall for use with PostgreSQL server.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.</p> | bool | no |  | false |
 | pgsql_configure_monitoring | <p>Whether to configure monitoring for PostgreSQL.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.</p> | bool | no |  | true |
@@ -36,11 +38,11 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 | pgsql_timezone | <p>The timezone to use for the PostgreSQL server.</p><p>See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid timezones.</p> | str | no |  | America/New_York |
 | pgsql_vault_managed_monitoring_credentials | <p>Whether to manage monitoring credentials in HashiCorp Vault.</p><p>If *pgsql_configure_monitoring* is `false`, this option is ignored.</p> | bool | no |  | false |
 | pgsql_create_vault_secret_engines | <p>Whether to create the Vault database mount point.</p> | bool | no |  | true |
-| pgsql_vault_database_mount_point | <p>The mount point for the HashiCorp Vault database secret engine.</p><p>This is only used if *pgsql_configure_vault_database_connection* is `true`.</p> | str | no |  | database |
+| pgsql_vault_database_mount_point | <p>The mount point for the HashiCorp Vault database secret engine.</p><p>If *pgsql_configure_vault_database_connection* is `true`, this is required.</p> | str | no |  |  |
 | pgsql_vault_user | <p>The username for the PostgreSQL user in HashiCorp Vault.</p><p>This is only used if *pgsql_configure_vault_database_connection* is `true`.</p> | str | no |  | vault |
 | pgsql_vault_access_hostname | <p>The FQDN or IP address for Vault to use when connecting to the PostgreSQL server.</p><p>This is only used if *pgsql_configure_vault_database_connection* is `true`.</p> | str | no |  |  |
 | pgsql_vault_ssl_mode | <p>The SSL mode to use when connecting to the PostgreSQL database.</p><p>See https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION for more information.</p><p>This is only used if *pgsql_configure_vault_database_connection* is `true`.</p> | str | no | <ul><li>disable</li><li>require</li><li>verify-ca</li><li>verify-full</li></ul> | verify-full |
-| pgsql_vault_monitor_mount_point | <p>The KV version 2 mount point for the HashiCorp Vault monitoring secret.</p><p>This is only used if *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`.</p> | str | no |  | secret |
+| pgsql_vault_monitor_mount_point | <p>The KV version 2 mount point for the HashiCorp Vault monitoring secret.</p><p>If *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`, this is required.</p> | str | no |  | secret |
 | pgsql_vault_monitor_path | <p>The path to the monitoring credentials in HashiCorp Vault.</p><p>This is only used if *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`.</p> | str | no |  | pgsql/{{ inventory_hostname }} |
 | pgsql_monitoring_user | <p>The username for the monitoring user.</p><p>This is only used if *pgsql_configure_monitoring* is `true`.</p> | str | no |  | zbx_monitor |
 | pgsql_monitoring_password | <p>The password for the monitoring user.</p><p>This is only used if *pgsql_configure_monitoring* is `true` and *pgsql_vault_managed_monitoring_credentials* is `false`.</p> | str | no |  |  |
@@ -100,8 +102,6 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 | pgsql_monitoring_ip_addresses | <p>A list of IP addresses from which monitoring services will access the PostgreSQL server.</p><p>This is only used if *pgsql_configure_monitoring* is `true`.</p><p>This should not include the loopback address.</p> | list of 'str' | no |  |  |
 | pgsql_additional_hba_entries | <p>A list of additional host-based authentication entries.</p><p>This should include any external services that need to access the PostgreSQL server.</p> | list of dicts of 'pgsql_additional_hba_entries' options | no |  |  |
 | pgsql_firewall_type | <p>The type of host firewall to configure.</p><p>For Debian and EL systems, this defaults to `firewalld`.</p><p>For Ubuntu systems, this defaults to `ufw`.</p> | str | no | <ul><li>firewalld</li><li>ufw</li></ul> |  |
-| pgsql_databases | <p>A list of databases to create.</p> | list of dicts of 'pgsql_databases' options | no |  |  |
-| pgsql_users | <p>A list of users to create.</p> | list of dicts of 'pgsql_users' options | no |  |  |
 
 ### Options for pgsql_additional_hba_entries
 |Option|Description|Type|Required|Choices|Default|
@@ -112,33 +112,6 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 | address | <p>The CIDR range to which the entry applies.</p><p>This must not be provided for `local` entries.</p> | str | no |  |  |
 | auth_method | <p>The authentication method to use.</p><p>See https://www.postgresql.org/docs/current/auth-pg-hba-conf.html#AUTH-PG-HBA-CONF for more information.</p> | str | yes | <ul><li>trust</li><li>reject</li><li>scram-sha-256</li><li>md5</li><li>password</li><li>gss</li><li>ident</li><li>peer</li><li>ldap</li><li>radius</li><li>cert</li><li>pam</li></ul> |  |
 | auth_options | <p>Any additional options needed for the authentication method.</p><p>For most common authentication methods, this should not be provided.</p><p>See https://www.postgresql.org/docs/current/auth-pg-hba-conf.html#AUTH-PG-HBA-CONF for more information.</p> | str | no |  |  |
-
-### Options for pgsql_databases
-|Option|Description|Type|Required|Choices|Default|
-|---|---|---|---|---|---|
-| name | <p>The name of the database.</p> | str | yes |  |  |
-| lc_collate | <p>The collation order for the database.</p> | str | no |  | en_US.UTF-8 |
-| lc_ctype | <p>The character classification for the database.</p> | str | no |  | en_US.UTF-8 |
-| encoding | <p>The character set encoding for the database.</p> | str | no |  | UTF-8 |
-| template | <p>The template database to use for the new database.</p> | str | no |  | template0 |
-| state | <p>The expected state of the database.</p> | str | no | <ul><li>present</li><li>absent</li></ul> | present |
-
-### Options for pgsql_users
-|Option|Description|Type|Required|Choices|Default|
-|---|---|---|---|---|---|
-| name | <p>The name of the user.</p> | str | yes |  |  |
-| password | <p>The password for the user.</p><p>If not provided, the user will not have a password.</p><p>If Vault is managing the password, this should not be provided.</p> | str | no |  |  |
-| role_attr_flags | <p>The options to add to the user during creation.</p><p>See https://www.postgresql.org/docs/current/sql-createrole.html for more information.</p> | list of 'str' | no |  |  |
-| state | <p>The expected state of the user.</p> | str | no | <ul><li>present</li><li>absent</li></ul> | present |
-| database_privileges | <p>A list of database privileges to grant to the user.</p> | list of dicts of 'database_privileges' options | no |  |  |
-
-### Options for pgsql_users > database_privileges
-|Option|Description|Type|Required|Choices|Default|
-|---|---|---|---|---|---|
-| database | <p>The name of the database to which the privilege applies.</p> | str | yes |  |  |
-| privileges | <p>A list of privileges to grant to the user.</p><p>See https://www.postgresql.org/docs/current/sql-grant.html for more information.</p> | list of 'str' | yes |  |  |
-| with_grant_option | <p>Whether to grant the user the ability to grant the privilege to others.</p> | bool | no |  | false |
-| state | <p>The expected state of the privilege.</p> | str | no | <ul><li>present</li><li>absent</li></ul> | present |
 
 
 ## License

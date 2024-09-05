@@ -6,6 +6,18 @@ argument_specs:
       - Installs and configures PostgreSQL
     author: Jim Tarpley
     options:
+      vault_url:
+        type: str
+        required: false
+        description:
+          - The URL for accessing HashiCorp Vault.
+          - Alternatively, this can be configured through ansible.cfg or environment variables.
+      vault_token:
+        type: str
+        required: false
+        description:
+          - The token for accessing HashiCorp Vault.
+          - Alternatively, this (or any other authentication method) can be configured through ansible.cfg or environment variables.
       pgsql_configure_logrotate:
         type: bool
         required: false
@@ -77,10 +89,9 @@ argument_specs:
       pgsql_vault_database_mount_point:
         type: str
         required: false
-        default: database
         description:
           - The mount point for the HashiCorp Vault database secret engine.
-          - This is only used if *pgsql_configure_vault_database_connection* is `true`.
+          - If *pgsql_configure_vault_database_connection* is `true`, this is required.
       pgsql_vault_user:
         type: str
         required: false
@@ -113,7 +124,7 @@ argument_specs:
         default: secret
         description:
           - The KV version 2 mount point for the HashiCorp Vault monitoring secret.
-          - This is only used if *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`.
+          - If *pgsql_configure_monitoring* and *pgsql_vault_managed_monitoring_credentials* are `true`, this is required.
       pgsql_vault_monitor_path:
         type: str
         required: false
@@ -613,120 +624,3 @@ argument_specs:
           - The type of host firewall to configure.
           - For Debian and EL systems, this defaults to `firewalld`.
           - For Ubuntu systems, this defaults to `ufw`.
-      pgsql_databases:
-        type: list
-        required: false
-        default: []
-        elements: dict
-        description:
-          - A list of databases to create.
-        options:
-          name:
-            type: str
-            required: true
-            description:
-              - The name of the database.
-          lc_collate:
-            type: str
-            required: false
-            default: en_US.UTF-8
-            description:
-              - The collation order for the database.
-          lc_ctype:
-            type: str
-            required: false
-            default: en_US.UTF-8
-            description:
-              - The character classification for the database.
-          encoding:
-            type: str
-            required: false
-            default: UTF-8
-            description:
-              - The character set encoding for the database.
-          template:
-            type: str
-            required: false
-            default: template0
-            description:
-              - The template database to use for the new database.
-          state:
-            type: str
-            required: false
-            default: present
-            choices:
-              - present
-              - absent
-            description:
-              - The expected state of the database.
-      pgsql_users:
-        type: list
-        required: false
-        default: []
-        elements: dict
-        description:
-          - A list of users to create.
-        options:
-          name:
-            type: str
-            required: true
-            description:
-              - The name of the user.
-          password:
-            type: str
-            required: false
-            description:
-              - The password for the user.
-              - If not provided, the user will not have a password.
-              - If Vault is managing the password, this should not be provided.
-          role_attr_flags:
-            type: list
-            required: false
-            default: []
-            elements: str
-            description:
-              - The options to add to the user during creation.
-              - See https://www.postgresql.org/docs/current/sql-createrole.html for more information.
-          state:
-            type: str
-            required: false
-            default: present
-            choices:
-              - present
-              - absent
-            description:
-              - The expected state of the user.
-          database_privileges:
-            type: list
-            required: false
-            default: []
-            elements: dict
-            description:
-              - A list of database privileges to grant to the user.
-            options:
-              database:
-                type: str
-                required: true
-                description:
-                  - The name of the database to which the privilege applies.
-              privileges:
-                type: list
-                required: true
-                elements: str
-                description:
-                  - A list of privileges to grant to the user.
-                  - See https://www.postgresql.org/docs/current/sql-grant.html for more information.
-              with_grant_option:
-                type: bool
-                required: false
-                description:
-                  - Whether to grant the user the ability to grant the privilege to others.
-              state:
-                type: str
-                required: false
-                default: present
-                choices:
-                  - present
-                  - absent
-                description:
-                  - The expected state of the privilege.

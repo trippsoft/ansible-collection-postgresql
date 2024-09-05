@@ -218,3 +218,22 @@
         pgsql_log_rotation_size | human_to_bytes('B') > 0)
     fail_msg: "Invalid PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}'. Log rotation size must be a number greater than 0 followed by kB, MB or GB or 0."
     success_msg: "PostgreSQL log rotation size '{{ pgsql_log_rotation_size }}' is valid."
+
+- name: Validate HashiCorp Vault monitoring mount point is defined
+  when:
+    - pgsql_configure_monitoring
+    - pgsql_vault_managed_monitoring_credentials
+  ansible.builtin.assert:
+    that:
+      - pgsql_vault_monitor_mount_point is defined
+    fail_msg: "The 'pgsql_vault_monitor_mount_point' variable must be defined when 'pgsql_configure_monitoring' and 'pgsql_vault_managed_monitoring_credentials' are true."
+    success_msg: "The 'pgsql_vault_monitor_mount_point' variable is defined."
+
+- name: Validate HashiCorp Vault database connection mount point is defined
+  when:
+    - pgsql_configure_vault_database_connection
+  ansible.builtin.assert:
+    that:
+      - pgsql_vault_database_mount_point is defined
+    fail_msg: "The 'pgsql_vault_database_mount_point' variable must be defined when 'pgsql_configure_vault_database_connection' is true."
+    success_msg: "The 'pgsql_vault_database_mount_point' variable is defined."

@@ -1,0 +1,42 @@
+---
+- name: Create Vault monitoring mount point
+  when:
+    - pgsql_create_vault_secret_engines
+  delegate_to: localhost
+  trippsc2.hashi_vault.vault_kv2_secret_engine:
+    token: "{{ vault_token | default(omit) }}"
+    url: "{{ vault_url | default(omit) }}"
+    engine_mount_point: "{{ pgsql_vault_monitor_mount_point }}"
+    state: present
+
+- name: Configure monitoring secret
+  block:
+    - name: Check for monitoring secret
+      delegate_to: localhost
+      community.hashi_vault.vault_kv2_get:
+        token: "{{ vault_token | default(omit) }}"
+        url: "{{ vault_url | default(omit) }}"
+        engine_mount_point: "{{ pgsql_vault_monitor_mount_point }}"
+        path: "{{ pgsql_vault_monitor_path }}"
+      register: _vault_monitor_secret
+
+    - name: Set variable to Vault secret, if present
+      ansible.builtin.set_fact:
+        pgsql_monitoring_password: "{{ _vault_monitor_secret.data.data.password }}"
+  rescue:
+    - name: Generate a new password
+      ansible.builtin.set_fact:
+        pgsql_monitoring_password: >-
+          {{ lookup('ansible.builtin.password',
+                    '/dev/null chars=ascii_lowercase,ascii_uppercase,digits,punctuation length=20') }}
+
+    - name: Store monitoring secret
+      delegate_to: localhost
+      community.hashi_vault.vault_kv2_write:
+        token: "{{ vault_token | default(omit) }}"
+        url: "{{ vault_url | default(omit) }}"
+        engine_mount_point: "{{ pgsql_vault_monitor_mount_point }}"
+        path: "{{ pgsql_vault_monitor_path }}"
+        data:
+          username: "{{ pgsql_monitoring_user }}"
+          password: "{{ pgsql_monitoring_password }}"
