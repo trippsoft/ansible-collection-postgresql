@@ -142,6 +142,7 @@ argument_specs:
       pgsql_monitoring_password:
         type: str
         required: false
+        no_log: true
         description:
           - The password for the monitoring user.
           - This is only used if *pgsql_configure_monitoring* is `true` and *pgsql_vault_managed_monitoring_credentials* is `false`.
