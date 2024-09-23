@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.1.1
+Version: 1.1.2
 
 This role installs and does initial configuration for PostgreSQL on Linux machines.
 
@@ -29,8 +29,8 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 | vault_url | <p>The URL for accessing HashiCorp Vault.</p><p>Alternatively, this can be configured through ansible.cfg or environment variables.</p> | str | no |  |  |
 | vault_token | <p>The token for accessing HashiCorp Vault.</p><p>Alternatively, this (or any other authentication method) can be configured through ansible.cfg or environment variables.</p> | str | no |  |  |
 | pgsql_configure_logrotate | <p>Whether to configure log rotation for the PostgreSQL log files.</p> | bool | no |  | true |
-| pgsql_configure_firewall | <p>Whether to configure the host firewall for use with PostgreSQL server.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.</p> | bool | no |  | false |
-| pgsql_configure_monitoring | <p>Whether to configure monitoring for PostgreSQL.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.</p> | bool | no |  | true |
+| pgsql_configure_firewall | <p>Whether to configure the host firewall for use with PostgreSQL server.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.</p> | bool | no |  | false |
+| pgsql_configure_monitoring | <p>Whether to configure monitoring for PostgreSQL.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.</p> | bool | no |  | false |
 | pgsql_configure_vault_database_connection | <p>Whether to configure a HashiCorp Vault database secret engine to manage PostgreSQL credentials.</p> | bool | no |  | true |
 | pgsql_major_version | <p>The major version of PostgreSQL to install.</p> | int | no | <ul><li>13</li><li>14</li><li>15</li><li>16</li></ul> | 16 |
 | pgsql_install_pgaudit | <p>Whether to install the PGAudit extension.</p> | bool | no |  | true |

@@ -29,14 +29,13 @@ argument_specs:
         required: false
         description:
           - Whether to configure the host firewall for use with PostgreSQL server.
-          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.
+          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.
       pgsql_configure_monitoring:
         type: bool
         required: false
-        default: true
         description:
           - Whether to configure monitoring for PostgreSQL.
-          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`.
+          - If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.
       pgsql_configure_vault_database_connection:
         type: bool
         required: false
