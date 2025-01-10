@@ -3,7 +3,7 @@ argument_specs:
   main:
     short_description: PostgreSQL
     description:
-      - Installs and configures PostgreSQL
+      - This role installs and does initial configuration for PostgreSQL on Linux systems.
     author: Jim Tarpley
     options:
       vault_url:
@@ -45,12 +45,12 @@ argument_specs:
       pgsql_major_version:
         type: int
         required: false
-        default: 16
         choices:
           - 13
           - 14
           - 15
           - 16
+          - 17
         description:
           - The major version of PostgreSQL to install.
       pgsql_install_pgaudit:

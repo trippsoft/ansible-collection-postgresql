@@ -56,13 +56,6 @@
     fail_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported."
     success_msg: "{{ ansible_distribution }} {{ ansible_distribution_major_version }} is supported."
 
-- name: Validate PostgreSQL major version
-  ansible.builtin.assert:
-    that:
-      - pgsql_major_version | string in _pgsql_supported_major_versions
-    fail_msg: "Unsupported PostgreSQL major version '{{ pgsql_major_version | string }}'. Supported versions are: {{ _pgsql_supported_major_versions | join(', ') }}"
-    success_msg: "PostgreSQL major version '{{ pgsql_major_version | string }}' is supported."
-
 - name: Validate PostgreSQL listen addresses
   ansible.builtin.assert:
     that:

@@ -3,7 +3,6 @@ pgsql_configure_firewall: "{{ not pgsql_listen_on_local_only }}"
 pgsql_configure_monitoring: "{{ not pgsql_listen_on_local_only }}"
 pgsql_configure_logrotate: true
 
-pgsql_major_version: 16
 pgsql_install_pgaudit: true
 pgsql_install_timescaledb: false
 

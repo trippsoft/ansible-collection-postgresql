@@ -6,4 +6,4 @@ This collection contains roles for installing and configuring PostgreSQL on Linu
 
 ### Roles
 
-- [install](roles/install/README.md) - This role installs and does initial configuration for PostgreSQL on Linux machines.
+- [install](roles/install/README.md) - This role installs and does initial configuration for PostgreSQL on Linux systems.

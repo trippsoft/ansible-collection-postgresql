@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2025-01-10
+
+### Role - install
+
+- Added support for PostgreSQL 17.
+- Removed default value for the `pgsql_major_version` variable. This was done to prevent unintentional upgrades.
+
 ## [1.1.3] - 2025-01-08
 
 ### Collection

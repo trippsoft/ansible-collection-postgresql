@@ -1,9 +1,9 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.1.3
+Version: 1.1.4
 
-This role installs and does initial configuration for PostgreSQL on Linux machines.
+This role installs and does initial configuration for PostgreSQL on Linux systems.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ This role installs and does initial configuration for PostgreSQL on Linux machin
 | pgsql_configure_firewall | <p>Whether to configure the host firewall for use with PostgreSQL server.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.</p> | bool | no |  |  |
 | pgsql_configure_monitoring | <p>Whether to configure monitoring for PostgreSQL.</p><p>If *pgsql_listen_on_local_only* is `true`, this defaults to `false`. Otherwise, it defaults to `true`.</p> | bool | no |  |  |
 | pgsql_configure_vault_database_connection | <p>Whether to configure a HashiCorp Vault database secret engine to manage PostgreSQL credentials.</p> | bool | no |  | True |
-| pgsql_major_version | <p>The major version of PostgreSQL to install.</p> | int | no | <ul><li>13</li><li>14</li><li>15</li><li>16</li></ul> | 16 |
+| pgsql_major_version | <p>The major version of PostgreSQL to install.</p> | int | no | <ul><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li></ul> |  |
 | pgsql_install_pgaudit | <p>Whether to install the PGAudit extension.</p> | bool | no |  | True |
 | pgsql_install_timescaledb | <p>Whether to install the TimescaleDB extension.</p> | bool | no |  | False |
 | pgsql_timezone | <p>The timezone to use for the PostgreSQL server.</p><p>See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid timezones.</p> | str | no |  | America/New_York |

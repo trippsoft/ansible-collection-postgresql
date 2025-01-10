@@ -3,7 +3,7 @@ galaxy_info:
     author: Jim Tarpley
     namespace: trippsc2
     role_name: install
-    description: This role installs and does initial configuration for PostgreSQL on Linux machines.
+    description: This role installs and does initial configuration for PostgreSQL on Linux systems.
     license: MIT
 
     min_ansible_version: '2.15'
