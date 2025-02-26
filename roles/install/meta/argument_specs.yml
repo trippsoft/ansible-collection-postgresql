@@ -4,7 +4,7 @@ argument_specs:
     short_description: PostgreSQL
     description:
       - This role installs and does initial configuration for PostgreSQL on Linux systems.
-    author: Jim Tarpley
+    author: Jim Tarpley (@trippsc2)
     options:
       vault_url:
         type: str
