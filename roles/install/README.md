@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 
 # Ansible Role: trippsc2.postgresql.install
-Version: 1.1.4
+Version: 1.1.5
 
 This role installs and does initial configuration for PostgreSQL on Linux systems.
 
@@ -118,5 +118,5 @@ This role installs and does initial configuration for PostgreSQL on Linux system
 MIT
 
 ## Author and Project Information
-Jim Tarpley
+Jim Tarpley (@trippsc2)
 <!-- END_ANSIBLE_DOCS -->

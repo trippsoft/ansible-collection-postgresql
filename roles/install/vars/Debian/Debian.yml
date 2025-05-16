@@ -1,6 +1,0 @@
----
-_pgsql_supported_distribution_releases:
-  - bookworm
-  - bullseye
-
-_pgsql_default_firewall_type: firewalld

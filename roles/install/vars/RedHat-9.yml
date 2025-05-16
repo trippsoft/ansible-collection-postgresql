@@ -1,0 +1,21 @@
+---
+_pgsql_os_is_supported: true
+_pgsql_os_is_tested: true
+
+_pgsql_default_firewall_type: firewalld
+
+_pgsql_pgaudit_package_name_by_major_version:
+  '13': pgaudit15_13
+  '14': pgaudit16_14
+  '15': pgaudit17_15
+  '16': pgaudit_16
+  '17': pgaudit_17
+
+_pgsql_pgaudit_package_name: >-
+  {{ _pgsql_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
+
+_pgsql_base_directory: /var/lib/pgsql
+_pgsql_data_directory: "{{ _pgsql_base_directory }}/{{ pgsql_major_version | string }}/data"
+_pgsql_service_name: "postgresql-{{ pgsql_major_version | string }}.service"
+_pgsql_initdb_path: "/usr/pgsql-{{ pgsql_major_version | string }}/bin/initdb"
+_pgsql_conf_directory: "{{ _pgsql_data_directory }}"

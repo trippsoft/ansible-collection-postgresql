@@ -3,16 +3,6 @@ _pgsql_supported_os_families:
   - Debian
   - RedHat
 
-_pgsql_el_pgaudit_package_name_by_major_version:
-  '13': pgaudit15_13
-  '14': pgaudit16_14
-  '15': pgaudit17_15
-  '16': pgaudit_16
-  '17': pgaudit_17
-
-_pgsql_el_pgaudit_package_name: >-
-  {{ _pgsql_el_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
-
 _pgsql_custom_listen_addresses: >-
   {{ pgsql_listen_addresses | default([]) | join(',') }}
 

@@ -1,7 +1,8 @@
 ---
-_pgsql_supported_distributions:
-  - Debian
-  - Ubuntu
+_pgsql_os_is_supported: true
+_pgsql_os_is_tested: true
+
+_pgsql_default_firewall_type: firewalld
 
 _pgsql_base_directory: /var/lib/postgresql
 _pgsql_data_directory: "{{ _pgsql_base_directory }}/{{ pgsql_major_version | string }}/main"
