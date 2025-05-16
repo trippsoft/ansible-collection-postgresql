@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.6] - 2025-05-16
+
+### Role - install
+
+- Fixed metadata.
+
 ## [1.1.5] - 2025-05-15
 
 ### Role - install
