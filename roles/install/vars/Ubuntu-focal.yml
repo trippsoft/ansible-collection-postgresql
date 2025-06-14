@@ -1,6 +1,6 @@
 ---
 _pgsql_os_is_supported: true
-_pgsql_os_is_tested: true
+_pgsql_os_is_tested: false
 
 _pgsql_default_firewall_type: ufw
 

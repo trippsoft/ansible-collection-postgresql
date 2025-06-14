@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.7] - 2025-06-11
+
+### Collection
+
+- Changed repository URL to use GitHub Organization.
+- Corrected missing or extra dependencies.
+
 ## [1.1.6] - 2025-05-16
 
 ### Role - install
