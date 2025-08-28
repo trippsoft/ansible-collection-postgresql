@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.8] - 2025-08-28
+
+### Role - install
+
+- Adjusted logrotate configuration to send signal to PostgreSQL process.
+
 ## [1.1.7] - 2025-06-11
 
 ### Collection

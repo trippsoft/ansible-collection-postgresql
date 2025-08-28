@@ -9,4 +9,8 @@
     delaycompress
     notifempty
     create {{ pgsql_log_file_mode | default('0600') }} postgres postgres
+    su root root
+    postrotate
+        /usr/pgsql-{{ pgsql_major_version }}/bin/pg_ctl logrotate -D {{ _pgsql_data_directory }} -s > /dev/null 2>&1 || /bin/true
+    endscript
 }
