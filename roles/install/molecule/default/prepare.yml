@@ -4,6 +4,15 @@
     - vault
   roles:
     - role: trippsc2.hashi_vault.testing_ca
+  tasks:
+    - name: Add linux to hosts file
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars['linux'].ansible_host }} linux"
+        owner: root
+        group: root
+        mode: '0644'
 
 - name: Prepare
   hosts:

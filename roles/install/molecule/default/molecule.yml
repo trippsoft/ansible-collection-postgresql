@@ -42,9 +42,11 @@ provisioner:
         pgsql_log_to_csvlog: true
         pgsql_log_to_syslog: true
         pgsql_vault_ssl_mode: verify-full
-        pgsql_vault_access_hostname: "{{ ansible_fqdn }}"
+        pgsql_vault_access_hostname: "{{ hostvars['linux'].ansible_fqdn }}"
         pgsql_vault_database_mount_point: database
         pgsql_vault_monitor_mount_point: monitoring
+        pgsql_vault_ip_addresses:
+          - "{{ hostvars['vault'].ansible_host }}"
   playbooks:
     verify: ../common/verify/main.yml
 verifier:
