@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.9] - 2025-10-07
+## [1.2.0] - 2025-10-07
 
 ### Role - install
 
 - Added support for Debian 13.
 - Added support for EL 10.
+- Added support for PostgreSQL 18.
 
 ## [1.1.8] - 2025-08-28
 
