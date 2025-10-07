@@ -51,7 +51,6 @@ jobs:
           - '15'
           - '16'
           - '17'
-          - '18'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
