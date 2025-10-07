@@ -1,0 +1,11 @@
+---
+_pgsql_os_is_supported: true
+_pgsql_os_is_tested: true
+
+_pgsql_default_firewall_type: firewalld
+
+_pgsql_base_directory: /var/lib/postgresql
+_pgsql_data_directory: "{{ _pgsql_base_directory }}/{{ pgsql_major_version | string }}/main"
+_pgsql_service_name: postgresql.service
+_pgsql_initdb_path: "/usr/lib/postgresql/{{ pgsql_major_version | string }}/bin/initdb"
+_pgsql_conf_directory: "/etc/postgresql/{{ pgsql_major_version | string }}/main"

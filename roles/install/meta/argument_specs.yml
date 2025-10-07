@@ -51,6 +51,7 @@ argument_specs:
           - 15
           - 16
           - 17
+          - 18
         description:
           - The major version of PostgreSQL to install.
       pgsql_install_pgaudit:

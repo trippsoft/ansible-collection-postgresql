@@ -10,6 +10,7 @@ _pgsql_pgaudit_package_name_by_major_version:
   '15': pgaudit17_15
   '16': pgaudit_16
   '17': pgaudit_17
+  '18': pgaudit_18
 
 _pgsql_pgaudit_package_name: >-
   {{ _pgsql_pgaudit_package_name_by_major_version[pgsql_major_version | string] }}
