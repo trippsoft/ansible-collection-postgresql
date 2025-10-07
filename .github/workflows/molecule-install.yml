@@ -51,6 +51,23 @@ jobs:
           - '15'
           - '16'
           - '17'
+          - '18'
+        timescaledb:
+          - 'true'
+          - 'false'
+        exclude:
+          - version: '13'
+            timescaledb: 'true'
+          - version: '14'
+            timescaledb: 'true'
+          - version: '15'
+            timescaledb: 'false'
+          - version: '16'
+            timescaledb: 'false'
+          - version: '17'
+            timescaledb: 'false'
+          - version: '18'
+            timescaledb: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,3 +86,4 @@ jobs:
           PY_COLORS: '1'
           MOLECULE_BOX: ${{ matrix.box }}
           MOLECULE_PGSQL_MAJOR_VERSION: ${{ matrix.version }}
+          MOLECULE_INSTALL_TIMESCALEDB: ${{ matrix.timescaledb }}

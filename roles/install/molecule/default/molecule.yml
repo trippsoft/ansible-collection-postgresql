@@ -31,7 +31,7 @@ provisioner:
         vault_url: "http://{{ hostvars['vault'].ansible_host }}:8200"
       subjects:
         pgsql_major_version: ${MOLECULE_PGSQL_MAJOR_VERSION:-17}
-        pgsql_install_timescaledb: true
+        pgsql_install_timescaledb: ${MOLECULE_INSTALL_TIMESCALEDB:-true}
         pgsql_ssl: true
         pgsql_ssl_ca_file: >-
           {{ '/etc/pki/ca-trust/source/anchors/ca_chain.crt' if ansible_os_family == 'RedHat' else '/usr/local/share/ca-certificates/ca_chain.crt' }}
