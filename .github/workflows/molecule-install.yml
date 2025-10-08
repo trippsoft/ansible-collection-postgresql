@@ -27,8 +27,48 @@ defaults:
   run:
     working-directory: 'trippsc2.postgresql'
 jobs:
-  molecule:
-    name: Run Molecule tests
+  molecule_timescaledb:
+    name: Run Molecule tests - TimescaleDB
+    runs-on:
+      - self-hosted
+      - linux
+      - ansible
+      - x64
+    strategy:
+      fail-fast: false
+      matrix:
+        box:
+          - debian13_base
+          - debian12_base
+          - rocky9_cis
+          - rocky8_cis
+          - ubuntu2404_base
+          - ubuntu2204_base
+        version:
+          - '15'
+          - '16'
+          - '17'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: 'trippsc2.postgresql'
+      - name: Run Molecule tests
+        run: |
+          source ~/venv/ansible-2.16/bin/activate
+          rm -rf ~/.ansible/collections/ansible_collections/*
+          cd ./roles/install
+          molecule test
+          rm -rf ~/.ansible/collections/ansible_collections/*
+          deactivate
+        env:
+          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: '1'
+          MOLECULE_BOX: ${{ matrix.box }}
+          MOLECULE_PGSQL_MAJOR_VERSION: ${{ matrix.version }}
+          MOLECULE_INSTALL_TIMESCALEDB: 'true'
+  molecule_no_timescaledb:
+    name: Run Molecule tests - No TimescaleDB
     runs-on:
       - self-hosted
       - linux
@@ -52,22 +92,43 @@ jobs:
           - '16'
           - '17'
           - '18'
-        timescaledb:
-          - 'true'
-          - 'false'
         exclude:
-          - version: '13'
-            timescaledb: 'true'
-          - version: '14'
-            timescaledb: 'true'
-          - version: '15'
-            timescaledb: 'false'
-          - version: '16'
-            timescaledb: 'false'
-          - version: '17'
-            timescaledb: 'false'
-          - version: '18'
-            timescaledb: 'true'
+          - box: debian13_base
+            version: '15'
+          - box: debian12_base
+            version: '15'
+          - box: rocky9_cis
+            version: '15'
+          - box: rocky8_cis
+            version: '15'
+          - box: ubuntu2404_base
+            version: '15'
+          - box: ubuntu2204_base
+            version: '15'
+          - box: debian13_base
+            version: '16'
+          - box: debian12_base
+            version: '16'
+          - box: rocky9_cis
+            version: '16'
+          - box: rocky8_cis
+            version: '16'
+          - box: ubuntu2404_base
+            version: '16'
+          - box: ubuntu2204_base
+            version: '16'
+          - box: debian13_base
+            version: '15'
+          - box: debian12_base
+            version: '17'
+          - box: rocky9_cis
+            version: '17'
+          - box: rocky8_cis
+            version: '17'
+          - box: ubuntu2404_base
+            version: '17'
+          - box: ubuntu2204_base
+            version: '17'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,4 +147,4 @@ jobs:
           PY_COLORS: '1'
           MOLECULE_BOX: ${{ matrix.box }}
           MOLECULE_PGSQL_MAJOR_VERSION: ${{ matrix.version }}
-          MOLECULE_INSTALL_TIMESCALEDB: ${{ matrix.timescaledb }}
+          MOLECULE_INSTALL_TIMESCALEDB: 'false'
